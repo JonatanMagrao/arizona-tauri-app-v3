@@ -1,4 +1,4 @@
-from functions import ensure_folder_path, find_file_in_tree_from, build_copy_plan
+from functions import ensure_folder_path, find_file_in_tree_from
 from classes.GoogleDriveHelper import GoogleDriveHelper
 from classes.LocalPathHelper import LocalPathHelper
 from classes.ProjectTypeIdentifier import ProjectTypeIdentifier
@@ -99,11 +99,10 @@ DD_V_137_060_EN = "https://drive.google.com/drive/folders/13xS7EhYaAANwU6GieO5le
 DD_AIV_202_002_EN = "https://drive.google.com/drive/folders/1XqoC7xW9ldoayOjh3GdnvDlMcaFp_KJf"
 DX_H_124_001_NOLANG = "https://drive.google.com/drive/folders/18bVqnWDr7Q9pZUmAmqBUaYWSz4lhzmdc"
 
-
 # load project data from Google Drive link
 try:
     google_helper = GoogleDriveHelper(config)
-    google_data = google_helper.get_link_data(DS_V_042_001_EN)
+    google_data = google_helper.get_link_data(DD_V_241_002_DE)
     project_identifier = ProjectTypeIdentifier(config, google_data)
 except Exception as e:
     raise e

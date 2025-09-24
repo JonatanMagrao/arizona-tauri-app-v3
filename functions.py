@@ -1,6 +1,8 @@
 from pathlib import Path
 import os
+import re
 import platform
+
 
 def find_file_in_tree_from(folder: Path) -> Path | None:
     try:
@@ -16,10 +18,12 @@ def find_file_in_tree_from(folder: Path) -> Path | None:
 
     raise FileNotFoundError("⚠️ No files found in the directory tree.")
 
+
 def ensure_folder_path(path: Path) -> Path:
     # path = rename_wip_path(path)
     path.mkdir(parents=True, exist_ok=True)
     return Path(path)
+
 
 def long_path(path: Path | str) -> Path:
     """
@@ -34,15 +38,14 @@ def long_path(path: Path | str) -> Path:
             return Path(f"\\\\?\\{string_path}")
     return path
 
-def build_copy_plan(structured_local_folders) -> list[tuple[Path, tuple[Path, Path]]]:
-    all_project_copy_tasks = []
-    for data in structured_local_folders:
-        folder_content_to_copy = Path(data["folder_content_to_copy"])
-        master_project_path = Path(data["master_project_path"])
-        mktout_project_path = Path(data["mktout_project_path"])
-        if data.get("mktout_project_path") is None:
-            continue
-        all_project_copy_tasks.append(
-            (folder_content_to_copy, (mktout_project_path, master_project_path)))
 
-    return all_project_copy_tasks
+def normalize_old_project_name(project_name: str) -> str:
+    match = re.match(r"([A-Z]{2})_(\d{3,4})_(.*)", project_name, re.IGNORECASE)
+    if not match:
+        return project_name
+
+    game_prefix = match.group(1).upper()
+    game_number = match.group(2)
+    rest = match.group(3)
+    
+    return f"{game_prefix}-V-{game_number}_{rest}"

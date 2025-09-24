@@ -1,4 +1,5 @@
 from pathlib import Path
+from functions import normalize_old_project_name
 from classes.SuperplayProject import SuperplayProject
 import re
 from typing import Optional
@@ -94,7 +95,7 @@ class SuperplayVideoProject(SuperplayProject):
         root_marketing_out_folder_path: Path = self.root_marketing_out_folder_path
 
         if not root_marketing_out_folder_path.exists():
-            return root_marketing_out_folder_path / self.game_name
+            return root_marketing_out_folder_path / normalize_old_project_name(self.game_name)
 
         if not root_marketing_out_folder_path.is_dir():
             raise NotADirectoryError(
@@ -107,7 +108,7 @@ class SuperplayVideoProject(SuperplayProject):
             if re.match(f"{self.game_code}-{self.project_type}-{self.project_number}_", folder_path.stem, flags=re.IGNORECASE):
                 return folder_path
 
-        return root_marketing_out_folder_path / self.game_name
+        return root_marketing_out_folder_path / normalize_old_project_name(self.game_name)
 
     @property
     def marketing_out_folder_path(self) -> Path:
