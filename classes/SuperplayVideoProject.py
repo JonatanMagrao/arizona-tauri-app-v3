@@ -8,16 +8,9 @@ LANGUAGE_PATTERN_LIST = [
     r'_([A-Z]{2}(?:-[A-Z]{2})?)_\d{2,3}s',
 ]
 
-GAMES = {
-    "DS": "DS_DisneySolitaire_OUT",
-    "DD": "DD_DiceDreams_OUT",
-    "DX": "DX_DominoDreams_OUT"
-}
-
 IGNORE_LIST = [
     "Archive"
 ]
-
 
 class SuperplayVideoProject(SuperplayProject):
     def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path):
@@ -29,7 +22,7 @@ class SuperplayVideoProject(SuperplayProject):
         Retorna a duração em segundos encontrada no nome do primeiro .mp4
         (ex.: '120s' -> '120'), ou None se não encontrar.
         """
-        for item in self.project_contents:
+        for item in self.content:
             if item.is_file() and item.suffix.lower() == ".mp4":
                 duration = re.search(
                     r"_(\d{2,3})s", item.stem, flags=re.IGNORECASE)
@@ -46,6 +39,7 @@ class SuperplayVideoProject(SuperplayProject):
                 return match.group(1)
 
         raise ValueError("Language not found in project name.")
+    
 
     @property
     def root_master_folder_path(self) -> Path:
@@ -131,6 +125,20 @@ class SuperplayVideoProject(SuperplayProject):
     def remove_from_out(self):
         print("Implement")
 
-    def deploy_outputs(self, src_copy: Path):
-        tasks = [[src_copy, self.marketing_out_folder_path, self.master_folder_path]]
-        self._copy_tasks(tasks)
+    @property
+    def job_manifest(self):
+        
+        if not self.language.lower() in self.supported_languages:
+            raise ValueError(f"Language '{self.language}' is not supported.") 
+
+        task = [self.gdrive_local_path, self.marketing_out_folder_path, self.master_folder_path]
+        project = {
+            "id": self.id,
+            "project_name": self.project_name,
+            "game": self.games.get(self.game_code).get("name"),
+            "type_label": self.project_types.get(self.project_type).get("label"),
+            "duration": self.duration,
+            "language": self.supported_languages.get(self.language.lower()),
+            "copy_paths": task
+        }
+        return project

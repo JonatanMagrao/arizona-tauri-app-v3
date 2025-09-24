@@ -1,12 +1,11 @@
-nomes = [
-  ["Jonatan","Dani","Ricardo"],
-  ["José","Antonia","Pedro"]
-]
+nomes = {
+  "pt-br":{"language": "Portuguese", "abbr": "pt-br"},
+  "ar":{"language": "Arabic", "abbr": "ar"},
+  "kr":{"language": "Korean", "abbr": "kr"},
+}
 
-for collection in nomes:
-  print(f"From: {collection[0]}")
-  for name in collection[1:]:
-    print(f"\tTo: {name}")
-  print("")
+teste = nomes.pop("pt-br")
+teste = nomes.pop("ar")
+print(nomes)
 
 

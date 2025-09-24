@@ -42,9 +42,16 @@ class ProjectTypeIdentifier():
         return any([content.suffix.lower() == ".mp4" for content in self.gdrive_local_path.iterdir()])
 
     @property
-    def create_project(self):
+    def create_projects(self):
         if self._project_type == "Video":
-            return SuperplayVideoProject(self._config, self.gdrive_local_path, self.local_path)
+            if self._has_only_folder:
+                projects = []
+                for folder in self.gdrive_local_path.iterdir():
+                    if folder.is_dir():
+                        projects.append(SuperplayVideoProject(self._config, folder, self.local_path / folder.name))
+                return projects
+            
+            return [SuperplayVideoProject(self._config, self.gdrive_local_path, self.local_path)]
 
         else:
             raise NotImplementedError(f"⚠️  Project type '{self._project_type}' is not implemented yet.")

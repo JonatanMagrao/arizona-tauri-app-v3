@@ -19,13 +19,15 @@ FOLDER_NAME_SUB_NORMALIZER = [
 class SuperplayProject:
     def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path):
 
-        self.gdrive_local_path_path = gdrive_local_path
+        self.gdrive_local_path = gdrive_local_path
         self.local_path = local_path
         self.project_types: dict = config.get("project_types")
-        self.game_info = config.get("games")
+        self.game_info: dict = config.get("games")
+        self.supported_languages: dict = config.get("supported_languages")
+        self.games: dict = config.get("games")
 
-        self.project_path_parts = self.gdrive_local_path_path.parts
-        self.project_contents = [*self.gdrive_local_path_path.iterdir()]
+        self.project_path_parts = self.gdrive_local_path.parts
+        self.content = [*self.gdrive_local_path.iterdir()]
         self._parse_project_id()
         self.mktout_base_path = config.get("mktout_base_path")
 
@@ -59,7 +61,7 @@ class SuperplayProject:
 
     @property
     def project_name(self) -> Optional[str]:
-        file = find_file_in_tree_from(self.gdrive_local_path_path,".mp4")
+        file = find_file_in_tree_from(self.gdrive_local_path,".mp4")
         remove_resolution = re.compile(r"_\d{2,4}x\d{2,4}", flags=re.IGNORECASE)
         return remove_resolution.sub("", file.stem)
 
@@ -88,7 +90,7 @@ class SuperplayProject:
         Se `First=False`, usa a última ocorrência da âncora.
         Retorna None se a âncora não existir no caminho.
         """
-        parts = list(self.gdrive_local_path_path.parts)
+        parts = list(self.gdrive_local_path.parts)
 
         # Aviso opcional
         if "Marketing OUT" in parts:
