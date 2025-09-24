@@ -6,10 +6,13 @@ import os
 import psutil
 import filecmp
 import threading
+import time
+from typing import Iterable
 
 from functions import long_path
 
 CopyTask = namedtuple("CopyTask", ["source", "destination"])
+
 
 class FileCopier:
     def __init__(self, config: dict = {}):
@@ -22,7 +25,7 @@ class FileCopier:
         )
 
         # === DEDUP: índices por destino (root) + lock ===
-        self._dest_indexes: dict[Path, dict[int, list[Path]] ] = {}
+        self._dest_indexes: dict[Path, dict[int, list[Path]]] = {}
         self._index_lock = threading.Lock()
 
     def _detect_max_workers(self):
@@ -30,7 +33,8 @@ class FileCopier:
         cpu_usage = psutil.cpu_percent(interval=1)
         ram_available_gb = psutil.virtual_memory().available / (1024 ** 3)
 
-        cpu_limit = max(1, cpu_count // 2) if cpu_usage > 80 else max(2, cpu_count - 2) if cpu_usage > 50 else cpu_count
+        cpu_limit = max(1, cpu_count // 2) if cpu_usage > 80 else max(2,
+                                                                      cpu_count - 2) if cpu_usage > 50 else cpu_count
         ram_limit = 2 if ram_available_gb < 4 else 4 if ram_available_gb < 8 else 8
 
         return min(cpu_limit, ram_limit)
@@ -164,11 +168,13 @@ class FileCopier:
                 if not destination.exists():
                     raise Exception(f"Destino não criado: {destination}")
                 if source.is_file() and source.stat().st_size != destination.stat().st_size:
-                    raise Exception(f"Tamanho diferente após cópia: {destination}")
+                    raise Exception(
+                        f"Tamanho diferente após cópia: {destination}")
                 return
 
             except Exception as e:
-                print(f"Erro ao copiar {source} (tentativa {attempt+1}/{max_retries}): {e}")
+                print(
+                    f"Erro ao copiar {source} (tentativa {attempt+1}/{max_retries}): {e}")
                 if attempt == max_retries - 1:
                     print(f"❌ Falha permanente em {source}")
 
@@ -182,20 +188,50 @@ class FileCopier:
             self._ensure_index(r)
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            futures = [executor.submit(self._copy_item, task) for task in tasks]
+            futures = [executor.submit(self._copy_item, task)
+                       for task in tasks]
             for f in futures:
                 f.result()
 
-    def copy_all_projects(self, all_contents: list[tuple[Path, tuple[Path, Path]]]):
-        all_file_tasks = []
+    # def copy_all_projects(self, all_contents: list[tuple[Path, tuple[Path, Path]]]):
+    #     all_file_tasks = []
 
-        for src_folder_path, (mktout, master) in all_contents:
-            all_file_tasks.append(CopyTask(source=src_folder_path, destination=mktout))
-            all_file_tasks.append(CopyTask(source=src_folder_path, destination=master))
+    #     for src_folder_path, (mktout, master) in all_contents:
+    #         all_file_tasks.append(CopyTask(source=src_folder_path, destination=mktout))
+    #         all_file_tasks.append(CopyTask(source=src_folder_path, destination=master))
 
-            print(f"Copying: __ {master.name} __\n"
-                  f"From: {src_folder_path.parent}\n"
-                  f"To: {mktout}\n"
-                  f"To: {master}\n")
+    #         print(f"Copying: __ {master.name} __\n"
+    #               f"From: {src_folder_path.parent}\n"
+    #               f"To: {mktout}\n"
+    #               f"To: {master}\n")
 
-        self.copy_tasks(all_file_tasks)
+    #     self.copy_tasks(all_file_tasks)
+
+
+    def copy_all_projects(self, groups: list[list]):
+        tasks = []
+        for group in groups:
+            if not group or len(group) < 2:
+                continue  # precisa ter src + ao menos 1 destino
+            src = Path(group[0])
+
+            seen = set()
+            for item in group[1:]:
+                if not item:
+                    continue
+                dstn = Path(item)
+                if dstn == src or dstn in seen:
+                    continue
+                seen.add(dstn)
+                tasks.append(CopyTask(source=src, destination=dstn))
+
+        if tasks:
+            print("Copying projects...")
+            self.copy_tasks(tasks)
+
+        for task in groups:
+            print("Copied:")
+            print(f"\tFrom: {task[0]}")
+            for dest in task[1:]:
+                print(f"\tTo: {dest}")
+            print("")

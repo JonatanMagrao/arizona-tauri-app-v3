@@ -4,7 +4,8 @@ from classes.LocalPathHelper import LocalPathHelper
 from classes.ProjectTypeIdentifier import ProjectTypeIdentifier
 from classes.FileCopier import FileCopier
 from pathlib import Path
-import sys, json
+import sys
+import json
 # sys.tracebacklimit = 0
 
 config = {
@@ -87,7 +88,6 @@ config = {
 }
 
 
-
 DS_V_042_001_EN = "https://drive.google.com/open?id=1tgRQu6s6E3l3NroUGeACmu8q84R482ex&usp=drive_fs"
 DS_V_014_023_EN = "https://drive.google.com/open?id=168eU8anxBh3arp8Ds21jyrIjpH8Bl2v_&usp=drive_fs"
 DS_V_013_001_JA = "https://drive.google.com/open?id=12myejlO1hw4Io52OMNuBTRhkG4Z4_5be&usp=drive_fs"
@@ -101,7 +101,7 @@ DX_H_124_001_NOLANG = "https://drive.google.com/drive/folders/18bVqnWDr7Q9pZUmAm
 
 file_copier = FileCopier(config)
 google_helper = GoogleDriveHelper(config)
-google_data = google_helper.get_link_data(DD_AIV_202_002_EN)
+google_data = google_helper.get_link_data(DS_V_042_001_EN)
 local_path = LocalPathHelper(google_data, config)
 google_local_path = local_path.google_drive_local_path
 project_identifier = ProjectTypeIdentifier(google_local_path, config)
@@ -123,11 +123,16 @@ print("")
 print(f"Game name: {game_name}")
 print(f"Project name: {project_name}")
 print(f"Project language: {language}")
-print(f"Marketing out path: {mktout_folder_path}: {mktout_folder_path.exists()}")
-print(f"Master folder path: {master_folder_path}: {master_folder_path.exists()}")
-print(f"Root master folder path: {root_master_folder_path}: {root_master_folder_path.exists()}")
-print(f"Marketing Out game folder path: {marketing_out_game_folder_path}: {marketing_out_game_folder_path.exists()}")
-print(f"Root marketing out folder path: {root_mktout_folder_path}: {root_mktout_folder_path.exists()}")
+print(
+    f"Marketing out path: {mktout_folder_path}: {mktout_folder_path.exists()}")
+print(
+    f"Master folder path: {master_folder_path}: {master_folder_path.exists()}")
+print(
+    f"Root master folder path: {root_master_folder_path}: {root_master_folder_path.exists()}")
+print(
+    f"Marketing Out game folder path: {marketing_out_game_folder_path}: {marketing_out_game_folder_path.exists()}")
+print(
+    f"Root marketing out folder path: {root_mktout_folder_path}: {root_mktout_folder_path.exists()}")
 print("")
 print(f"Local path: {full_local_path}: {full_local_path.exists()}")
 print(f"Google local path: {google_local_path}: {google_local_path.exists()}")
@@ -137,16 +142,10 @@ print("")
 #! a ideia é que daqui para baixo, seja tudo interno na classe SuperplayVideoProject, eu implemente o botão de copy e eu só chame ele. simples assim!
 #! validações de se é multi_projects, será interno também, facilitando o processo de saída
 
-paths = [
-    {
-        "folder_content_to_copy": google_local_path, 
-        "master_project_path": master_folder_path, 
-        "mktout_project_path": mktout_folder_path
-    }
+tasks = [
+    [google_local_path, mktout_folder_path, master_folder_path],
+    [google_local_path, mktout_folder_path, master_folder_path],
 ]
 
-copy_plan = build_copy_plan(paths)
-file_copier.copy_all_projects(copy_plan)
+file_copier.copy_all_projects(tasks)
 print("Finished")
-
-
