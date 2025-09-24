@@ -123,7 +123,6 @@ class SuperplayVideoProject(SuperplayProject):
 
         for folder_path in sorted(marketing_out_game_folder_path.iterdir()):
             if re.match(f"{self.game_code}-{self.project_type}-{self.project_number}-{self.iteration_number}_", folder_path.stem, flags=re.IGNORECASE):
-                print(folder_path)
                 return folder_path
 
         return marketing_out_game_folder_path / self.project_name

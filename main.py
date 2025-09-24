@@ -144,4 +144,4 @@ print("")
 #! a ideia é que daqui para baixo, seja tudo interno na classe SuperplayVideoProject, eu implemente o botão de copy e eu só chame ele. simples assim!
 #! validações de se é multi_projects, será interno também, facilitando o processo de saída
 
-projeto.deploy_outputs(google_local_path)
+# projeto.deploy_outputs(google_local_path)

@@ -1,4 +1,5 @@
-import os
+from functions import find_file_in_tree_from
+import os, re
 from pathlib import Path
 import re
 from typing import Optional
@@ -58,14 +59,9 @@ class SuperplayProject:
 
     @property
     def project_name(self) -> Optional[str]:
-        for content in self.project_contents:
-            if content.is_file() and content.suffix.lower() == ".mp4":
-                name = content.stem
-                for sub in FOLDER_NAME_SUB_NORMALIZER:
-                    name = re.sub(sub, "", name, flags=re.IGNORECASE)
-                name = re.sub(r"__+", "_", name).strip("_. ")
-                return name
-        return None
+        file = find_file_in_tree_from(self.gdrive_local_path_path,".mp4")
+        remove_resolution = re.compile(r"_\d{2,4}x\d{2,4}", flags=re.IGNORECASE)
+        return remove_resolution.sub("", file.stem)
 
     def _parse_project_id(self) -> None:
         parts = self.project_name.split("-")
