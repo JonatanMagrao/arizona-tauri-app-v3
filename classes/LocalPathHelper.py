@@ -22,8 +22,8 @@ class LocalPathHelper:
                 if full_path.exists():
                     return full_path
 
-        print("Local Google Drive not found (Windows)")
-        sys.exit()
+        raise Exception("Local Google Drive not found (Windows)")
+        
 
     def _get_full_path_mac(self) -> Path:
         home = Path.home()
@@ -33,8 +33,9 @@ class LocalPathHelper:
                     full_path = Path(home, item, root)
                     if full_path.exists():
                         return full_path
-        print("Local Google Drive not found (macOS)")
-        sys.exit()
+                    
+        raise Exception("Local Google Drive not found (macOS)")
+        
 
     @property
     def full_local_path(self) -> Path:

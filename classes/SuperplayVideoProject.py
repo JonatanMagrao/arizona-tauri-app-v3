@@ -109,7 +109,6 @@ class SuperplayVideoProject(SuperplayProject):
     def marketing_out_folder_path(self) -> Path:
         marketing_out_game_folder_path: Path = self.marketing_out_game_folder_path
 
-
         if not marketing_out_game_folder_path.exists():
             return marketing_out_game_folder_path / self.project_name
         
@@ -121,9 +120,12 @@ class SuperplayVideoProject(SuperplayProject):
                 print(folder_path)
                 return folder_path
         
-        return marketing_out_game_folder_path / self.project_name
-        
+        return marketing_out_game_folder_path / self.project_name        
 
     @property
     def remove_from_out(self):
         print("Implement")
+
+    def deploy_outputs(self, src_copy: Path):
+        tasks = [[src_copy, self.marketing_out_folder_path, self.master_folder_path]]
+        self._copy_tasks(tasks)

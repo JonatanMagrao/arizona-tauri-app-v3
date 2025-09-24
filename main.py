@@ -99,13 +99,15 @@ DD_V_137_060_EN = "https://drive.google.com/drive/folders/13xS7EhYaAANwU6GieO5le
 DD_AIV_202_002_EN = "https://drive.google.com/drive/folders/1XqoC7xW9ldoayOjh3GdnvDlMcaFp_KJf"
 DX_H_124_001_NOLANG = "https://drive.google.com/drive/folders/18bVqnWDr7Q9pZUmAmqBUaYWSz4lhzmdc"
 
-file_copier = FileCopier(config)
+
+# load project data from Google Drive link
 google_helper = GoogleDriveHelper(config)
 google_data = google_helper.get_link_data(DS_V_042_001_EN)
 local_path = LocalPathHelper(google_data, config)
 google_local_path = local_path.google_drive_local_path
 project_identifier = ProjectTypeIdentifier(google_local_path, config)
 
+# create project and copy files
 projeto = project_identifier.create_project
 
 game_name = projeto.game_name
@@ -142,10 +144,4 @@ print("")
 #! a ideia é que daqui para baixo, seja tudo interno na classe SuperplayVideoProject, eu implemente o botão de copy e eu só chame ele. simples assim!
 #! validações de se é multi_projects, será interno também, facilitando o processo de saída
 
-tasks = [
-    [google_local_path, mktout_folder_path, master_folder_path],
-    [google_local_path, mktout_folder_path, master_folder_path],
-]
-
-file_copier.copy_all_projects(tasks)
-print("Finished")
+projeto.deploy_outputs(google_local_path)

@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 import re
 from typing import Optional
+from classes.FileCopier import FileCopier
 
 
 FILE_NAME_SUB_NORMALIZER = [
@@ -20,7 +21,7 @@ class SuperplayProject:
         self.prj_source_path = prj_source
         self.project_types: dict = config.get("project_types")
         self.game_info = config.get("games")
-        
+
         self.project_path_parts = self.prj_source_path.parts
         self.project_contents = [*self.prj_source_path.iterdir()]
         self._parse_project_id()
@@ -29,6 +30,7 @@ class SuperplayProject:
         self.test_path = config.get("test_path")
         self.test = True
 
+        self.file_copier = FileCopier(config)
 
     @property
     def game_name(self) -> Optional[str]:
@@ -80,6 +82,9 @@ class SuperplayProject:
             "project_iteration": self.iteration_number
         }
 
+    def _copy_tasks(self, tasks: list):
+        self.file_copier.copy_all_projects(tasks)
+
     def find_path_anchor(self, folder_name: str, First: bool = True) -> Optional[Path]:
         """
         Retorna o Path desde a raiz até (e incluindo) a pasta `folder_name`.
@@ -102,10 +107,3 @@ class SuperplayProject:
         # Remonta o path até a âncora
         root = Path(parts[0])
         return root.joinpath(*parts[1:idx + 1])
-
-
-
-
-
-
-

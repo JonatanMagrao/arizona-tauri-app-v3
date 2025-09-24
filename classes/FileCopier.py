@@ -193,21 +193,6 @@ class FileCopier:
             for f in futures:
                 f.result()
 
-    # def copy_all_projects(self, all_contents: list[tuple[Path, tuple[Path, Path]]]):
-    #     all_file_tasks = []
-
-    #     for src_folder_path, (mktout, master) in all_contents:
-    #         all_file_tasks.append(CopyTask(source=src_folder_path, destination=mktout))
-    #         all_file_tasks.append(CopyTask(source=src_folder_path, destination=master))
-
-    #         print(f"Copying: __ {master.name} __\n"
-    #               f"From: {src_folder_path.parent}\n"
-    #               f"To: {mktout}\n"
-    #               f"To: {master}\n")
-
-    #     self.copy_tasks(all_file_tasks)
-
-
     def copy_all_projects(self, groups: list[list]):
         tasks = []
         for group in groups:
