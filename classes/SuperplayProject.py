@@ -16,14 +16,15 @@ FOLDER_NAME_SUB_NORMALIZER = [
 
 
 class SuperplayProject:
-    def __init__(self, prj_source: Path, config: dict):
+    def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path):
 
-        self.prj_source_path = prj_source
+        self.gdrive_local_path_path = gdrive_local_path
+        self.local_path = local_path
         self.project_types: dict = config.get("project_types")
         self.game_info = config.get("games")
 
-        self.project_path_parts = self.prj_source_path.parts
-        self.project_contents = [*self.prj_source_path.iterdir()]
+        self.project_path_parts = self.gdrive_local_path_path.parts
+        self.project_contents = [*self.gdrive_local_path_path.iterdir()]
         self._parse_project_id()
         self.mktout_base_path = config.get("mktout_base_path")
 
@@ -91,7 +92,7 @@ class SuperplayProject:
         Se `First=False`, usa a última ocorrência da âncora.
         Retorna None se a âncora não existir no caminho.
         """
-        parts = list(self.prj_source_path.parts)
+        parts = list(self.gdrive_local_path_path.parts)
 
         # Aviso opcional
         if "Marketing OUT" in parts:

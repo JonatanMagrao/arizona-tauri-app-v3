@@ -101,11 +101,12 @@ DX_H_124_001_NOLANG = "https://drive.google.com/drive/folders/18bVqnWDr7Q9pZUmAm
 
 
 # load project data from Google Drive link
-google_helper = GoogleDriveHelper(config)
-google_data = google_helper.get_link_data(DS_V_042_001_EN)
-local_path = LocalPathHelper(google_data, config)
-google_local_path = local_path.google_drive_local_path
-project_identifier = ProjectTypeIdentifier(google_local_path, config)
+try:
+    google_helper = GoogleDriveHelper(config)
+    google_data = google_helper.get_link_data(DS_V_042_001_EN)
+    project_identifier = ProjectTypeIdentifier(config, google_data)
+except Exception as e:
+    raise e
 
 # create project and copy files
 projeto = project_identifier.create_project
@@ -118,8 +119,8 @@ marketing_out_game_folder_path = projeto.marketing_out_game_folder_path
 root_master_folder_path = projeto.root_master_folder_path
 mktout_folder_path = projeto.marketing_out_folder_path
 master_folder_path = projeto.master_folder_path
-full_local_path = local_path.full_local_path
-google_local_path = local_path.google_drive_local_path
+full_local_path = projeto.local_path
+google_local_path = projeto.gdrive_local_path_path
 
 print("")
 print(f"Game name: {game_name}")

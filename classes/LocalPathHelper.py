@@ -6,11 +6,11 @@ from pathlib import Path
 import sys
 
 class LocalPathHelper:
-    def __init__(self, google_path: list, config: dict):
+    def __init__(self, config: dict, google_data: dict):
         self.is_mac = platform.system().lower() == "darwin"
         self._config = config
         self.shared_drive_labels = self._config.get("shared_drive_labels")
-        self.google_path = google_path.get("path")
+        self.google_path = google_data.get("path")
 
     def _get_full_path_win(self) -> Path:
         def list_drives_os():

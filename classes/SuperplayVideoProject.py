@@ -17,9 +17,10 @@ IGNORE_LIST = [
     "Archive"
 ]
 
+
 class SuperplayVideoProject(SuperplayProject):
-    def __init__(self, prj_source_path: Path, config: dict):
-        super().__init__(prj_source_path, config)
+    def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path):
+        super().__init__(config, gdrive_local_path, local_path)
 
     @property
     def duration(self) -> Optional[str]:
@@ -58,14 +59,16 @@ class SuperplayVideoProject(SuperplayProject):
         try:
             project_type = self.id.get("project_type")
             game_code = self.id.get("game_code").upper()
-            game_code_path = self.game_info.get(game_code).get("mktout_folder_name")
-            type_folder_path = self.project_types.get(project_type).get("folder_path")        
+            game_code_path = self.game_info.get(
+                game_code).get("mktout_folder_name")
+            type_folder_path = self.project_types.get(
+                project_type).get("folder_path")
 
             if self.test:
                 return Path(self.test_path) / "Marketing OUT" / game_code_path / type_folder_path / self.language
             else:
                 return Path(self.marketing_out_folder_path) / game_code_path / type_folder_path / self.language
-            
+
         except Exception as e:
             raise e
 
@@ -75,14 +78,15 @@ class SuperplayVideoProject(SuperplayProject):
 
         if not root_master_folder_path.exists():
             return root_master_folder_path / self.project_name
-        
+
         if not root_master_folder_path.is_dir():
-            raise NotADirectoryError(f"⚠️  Master root path is not a directory: {root_master_folder_path}")
+            raise NotADirectoryError(
+                f"⚠️  Master root path is not a directory: {root_master_folder_path}")
 
         for folder_path in sorted(root_master_folder_path.iterdir()):
             if re.match(f"{self.game_code}-{self.project_type}-{self.project_number}-{self.iteration_number}_", folder_path.stem, flags=re.IGNORECASE):
                 return folder_path
-            
+
         return root_master_folder_path / self.project_name
 
     @property
@@ -91,19 +95,19 @@ class SuperplayVideoProject(SuperplayProject):
 
         if not root_marketing_out_folder_path.exists():
             return root_marketing_out_folder_path / self.game_name
-        
+
         if not root_marketing_out_folder_path.is_dir():
-            raise NotADirectoryError(f"⚠️  Marketing OUT root path is not a directory: {root_marketing_out_folder_path}")
-        
+            raise NotADirectoryError(
+                f"⚠️  Marketing OUT root path is not a directory: {root_marketing_out_folder_path}")
+
         for folder_path in sorted(root_marketing_out_folder_path.iterdir()):
             if re.match(f"{self.game_code}_{self.project_number}_", folder_path.stem, flags=re.IGNORECASE):
                 return folder_path
-            
+
             if re.match(f"{self.game_code}-{self.project_type}-{self.project_number}_", folder_path.stem, flags=re.IGNORECASE):
-                return folder_path            
-        
+                return folder_path
+
         return root_marketing_out_folder_path / self.game_name
-    
 
     @property
     def marketing_out_folder_path(self) -> Path:
@@ -111,16 +115,17 @@ class SuperplayVideoProject(SuperplayProject):
 
         if not marketing_out_game_folder_path.exists():
             return marketing_out_game_folder_path / self.project_name
-        
+
         if not marketing_out_game_folder_path.is_dir():
-            raise NotADirectoryError(f"⚠️  Marketing OUT root path is not a directory: {marketing_out_game_folder_path}")
-        
+            raise NotADirectoryError(
+                f"⚠️  Marketing OUT root path is not a directory: {marketing_out_game_folder_path}")
+
         for folder_path in sorted(marketing_out_game_folder_path.iterdir()):
             if re.match(f"{self.game_code}-{self.project_type}-{self.project_number}-{self.iteration_number}_", folder_path.stem, flags=re.IGNORECASE):
                 print(folder_path)
                 return folder_path
-        
-        return marketing_out_game_folder_path / self.project_name        
+
+        return marketing_out_game_folder_path / self.project_name
 
     @property
     def remove_from_out(self):
