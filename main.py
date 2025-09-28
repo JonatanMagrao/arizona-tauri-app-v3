@@ -117,7 +117,7 @@ file_copier = FileCopier(metadata[0].get("ignore_list"))
 
 print(json.dumps(metadata, indent=2, ensure_ascii=False, default=str))
 
-file_copier.copy_all_projects(tasks)
+# file_copier.copy_all_projects(tasks)
 #todo implementar slack criar slack payload e enviar mensagem pro slack
 
 # sequencia lógica 
