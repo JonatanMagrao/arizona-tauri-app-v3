@@ -9,8 +9,10 @@ LANGUAGE_PATTERN_LIST = [
 ]
 
 IGNORE_LIST = [
-    "Archive"
+    "Archive",
+    "_Archive"
 ]
+
 
 class SuperplayVideoProject(SuperplayProject):
     def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path):
@@ -39,7 +41,6 @@ class SuperplayVideoProject(SuperplayProject):
                 return match.group(1)
 
         raise ValueError("Language not found in project name.")
-    
 
     @property
     def root_master_folder_path(self) -> Path:
@@ -127,11 +128,11 @@ class SuperplayVideoProject(SuperplayProject):
 
     @property
     def job_manifest(self):
-        
-        if not self.language.lower() in self.supported_languages:
-            raise ValueError(f"Language '{self.language}' is not supported.") 
 
-        task = [self.gdrive_local_path, self.marketing_out_folder_path, self.master_folder_path]
+        if not self.language.lower() in self.supported_languages:
+            raise ValueError(f"Language '{self.language}' is not supported.")
+
+        copy_paths = [self.gdrive_local_path, self.marketing_out_folder_path, self.master_folder_path]
         project = {
             "id": self.id,
             "project_name": self.project_name,
@@ -139,6 +140,7 @@ class SuperplayVideoProject(SuperplayProject):
             "type_label": self.project_types.get(self.project_type).get("label"),
             "duration": self.duration,
             "language": self.supported_languages.get(self.language.lower()),
-            "copy_paths": task
+            "content": self.content,
+            "copy_paths": copy_paths
         }
         return project

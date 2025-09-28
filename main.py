@@ -49,11 +49,19 @@ config = {
     "project_types": {
         "P": {
             "label": "Playable",
-            "folder_path": "06-Playables"
+            "folder_path": "06-Playables",
+            "ignore_list": {
+                "files_extensions": [],
+                "folder_names": []
+            }
         },
         "V": {
             "label": "Video",
-            "folder_path": "07-Videos"
+            "folder_path": "07-Videos",
+            "ignore_list": {
+                "file_extensions": [".mov", ".avi", ".mkv"],
+                "folder_names": ["Archive", "_Archive"]
+            }
         },
         "H": {
             "label": "Hook",
@@ -83,7 +91,7 @@ config = {
         }
     },
     "ignored_copy_file_extensions": [],
-    "ignored_copy_folder_names": []
+    "ignored_copy_folder_names": ["_Archive"]
 
 }
 
@@ -95,6 +103,8 @@ DD_V_195_008_EN = "https://drive.google.com/open?id=1dswXXO_WHILNRuOBXmGaBa8BIJR
 DD_V_195_009_EN = "https://drive.google.com/open?id=1Up552KkWhKtDkBkAf_KlVfQo71C5gE5i&usp=drive_fs"
 DD_V_241_002_DE = "https://drive.google.com/open?id=1ktTBb6M3yLmWwBVu2Z3ypi0jvOVAMN-c&usp=drive_fs"
 DS_V_014_025_LOC = "https://drive.google.com/drive/folders/1LW1kRvYLr0ZOgZN0-tNBxguB-bmIpuKh"
+DS_V_011_017_EN = "https://drive.google.com/drive/folders/1OYzPqjTWYuW_60U5OTec8VTbSwur1Q5v"
+DS_V_024_002_EN = "https://drive.google.com/drive/folders/1006tvx1QsAkUIOQKzvK5y8apMgu-3U3n"
 
 DD_V_137_060_EN = "https://drive.google.com/drive/folders/13xS7EhYaAANwU6GieO5leQtW1mGggVnE"
 DD_AIV_202_002_EN = "https://drive.google.com/drive/folders/1XqoC7xW9ldoayOjh3GdnvDlMcaFp_KJf"
@@ -102,7 +112,7 @@ DX_H_124_001_NOLANG = "https://drive.google.com/drive/folders/18bVqnWDr7Q9pZUmAm
 
 
 file_copier = FileCopier(config)
-projetos = build_projects(config, DS_V_014_025_LOC)
+projetos = build_projects(config, DS_V_024_002_EN)
 tasks = collect_copy_paths(projetos)
 metadata = get_full_metadata(projetos)
 

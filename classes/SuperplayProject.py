@@ -25,6 +25,7 @@ class SuperplayProject:
         self.game_info: dict = config.get("games")
         self.supported_languages: dict = config.get("supported_languages")
         self.games: dict = config.get("games")
+        self.ignore_list: dict = config.get("ignore_list")
 
         self.project_path_parts = self.gdrive_local_path.parts
         self.content = [*self.gdrive_local_path.iterdir()]
