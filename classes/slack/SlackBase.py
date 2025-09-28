@@ -7,8 +7,17 @@ from classes.slack.keyvault import KeyringEntry
 
 class SlackBase:
 
-    def __init__(self, user_token: str, *, raise_on_invalid: bool = True) -> None:
-        self.token = user_token
+    def __init__(
+        self,
+        *,
+        raise_on_invalid: bool = True,
+        vault_app: str = "OutApp",
+        vault_key: str = "slack_user_token",
+    ) -> None:
+        # pega o token direto do KeyVault
+        keyring_entry = KeyringEntry(vault_app, vault_key)
+        self.token = keyring_entry.get()
+
         self.client = WebClient(token=self.token)
         self._is_valid: Optional[bool] = None
 
@@ -172,10 +181,7 @@ class SlackBase:
 # Uso rápido (exemplo)
 # -------------------------
 if __name__ == "__main__":
-    import json
-    kr = KeyringEntry("OutApp", "slack_user_token")
-    TOKEN = kr.get()
-    slack = SlackBase(TOKEN)
+    slack = SlackBase()
 
     # print("Token válido?", slack.validate_token())
     # print(slack.mark_users("andrei.sm@superplay.co"))
@@ -189,6 +195,6 @@ if __name__ == "__main__":
     # channel_name = slack.get_channel_name_by_id("C08UDRZF9GC")
     # print("channel_name:", channel_name)
 
-    # slack.send_message_to_channel("C093YV2DSFK", f"{slack.mark_users("andrei.sm@superplay.co")} teste")
+    # slack.send_message_to_channel("C093YV2DSFK", f"{slack.mark_users(['andrei.sm@superplay.co'])} teste")
     # ts = slack.send_dm_by_email("jonatan.m@superplay.co", f"{slack.mark_users(['andrei.sm@superplay.co','jonatan.m@superplay.co'])}\nteste")
-    # print(slack.mark_users(['andrei.sm@superplay.co','jonatan.m@superplay.co']))
+    print(slack.mark_users(['andrei.sm@superplay.co','jonatan.m@superplay.co']))

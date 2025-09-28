@@ -1,11 +1,10 @@
 from classes.slack.SlackBase import SlackBase
-from classes.slack.keyvault import KeyringEntry
 from functions import long_path
 from pathlib import Path
 
 class SlackSuperplay(SlackBase):
-    def __init__(self, user_token: str, *, raise_on_invalid: bool = True) -> None:
-        super().__init__(user_token, raise_on_invalid=raise_on_invalid)
+    def __init__(self, *, raise_on_invalid: bool = True) -> None:
+        super().__init__()
 
     def send_file_to_channels(self, channel_ids: list[str], file_path: Path, msg_text: str = "") -> None:
         file_path = long_path(Path(file_path))
@@ -47,9 +46,7 @@ class SlackSuperplay(SlackBase):
 
 
 if __name__ == "__main__":
-    kr = KeyringEntry("OutApp", "slack_user_token")
-    TOKEN = kr.get()
-    slack = SlackSuperplay(TOKEN)
+    slack = SlackSuperplay()
 
     channel_id = "C093YV2DSFK"
     producers = ['andrei.sm@superplay.co', 'jonatan.m@superplay.co']

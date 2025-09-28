@@ -139,7 +139,7 @@ class SuperplayVideoProject(SuperplayProject):
         project = {
             "id": self.id,
             "project_name": self.project_name,
-            "game": self.game_info.get(self.game_code).get("name"),
+            "game": self.game_info.get(self.game_code),
             "type_label": self.project_types.get(self.project_type).get("label"),
             "duration": self.duration,
             "language": self.supported_languages.get(self.language.lower()),

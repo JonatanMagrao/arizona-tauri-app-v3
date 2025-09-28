@@ -4,6 +4,7 @@ from project_discovery import (
     get_full_metadata,
 )
 from classes.FileCopier import FileCopier
+from classes.slack.SlackSuperplay import SlackSuperplay
 import sys
 import json
 # sys.tracebacklimit = 0
@@ -79,15 +80,18 @@ config = {
     "games": {
         "DS": {
             "name": "Disney Solitaire",
-            "mktout_folder_name": "DS_DisneySolitaire_OUT"
+            "mktout_folder_name": "DS_DisneySolitaire_OUT",
+            "slack_channel_id": "C08U43XE6GK"
         },
         "DD": {
             "name": "Dice Dreams",
-            "mktout_folder_name": "DD_DiceDreams_OUT"
+            "mktout_folder_name": "DD_DiceDreams_OUT",
+            "slack_channel_id": "C08UDRZF9GC"
         },
         "DX": {
             "name": "Domino Dreams",
-            "mktout_folder_name": "DX_DominoDreams_OUT"
+            "mktout_folder_name": "DX_DominoDreams_OUT",
+            "slack_channel_id": "C08V0JP8R3J"
         }
     },
 
@@ -109,16 +113,29 @@ DD_V_137_060_EN = "https://drive.google.com/drive/folders/13xS7EhYaAANwU6GieO5le
 DD_AIV_202_002_EN = "https://drive.google.com/drive/folders/1XqoC7xW9ldoayOjh3GdnvDlMcaFp_KJf"
 DX_H_124_001_NOLANG = "https://drive.google.com/drive/folders/18bVqnWDr7Q9pZUmAmqBUaYWSz4lhzmdc"
 
-
-projetos = build_projects(config, DS_V_018_041_LOC)
+# ==================== Carregar projetos ====================
+slack = SlackSuperplay()
+projetos = build_projects(config, DD_V_137_060_EN)
 tasks = collect_copy_paths(projetos)
 metadata = get_full_metadata(projetos)
 file_copier = FileCopier(metadata[0].get("ignore_list"))
 
-print(json.dumps(metadata, indent=2, ensure_ascii=False, default=str))
-
+# ==================== Copiar arquivos ====================
+# print(json.dumps(metadata, indent=2, ensure_ascii=False, default=str))
 # file_copier.copy_all_projects(tasks)
-#todo implementar slack criar slack payload e enviar mensagem pro slack
+
+# ==================== Mandar mensagem para o Slack arquivos ====================
+channel_id = metadata[0].get("game").get("slack_channel_id")
+producers = ['andrei.sm@superplay.co', 'jonatan.m@superplay.co']
+project_name = metadata[0].get("project_name")
+project_link = "https://drive.google.com/open?id=1hYoyBj6E8-7dcb_RvTglKRj6JAhAKPLm&usp=drive_fs"
+video_path = metadata[0].get("copy_paths")[0]
+
+print(channel_id)
+print(project_name)
+print(video_path)
+
+# slack.send_out_msg(channel_id,producers,project_name,project_link,video_path)
 
 # sequencia lógica 
 '''
@@ -128,5 +145,7 @@ print(json.dumps(metadata, indent=2, ensure_ascii=False, default=str))
 4. FileCopier -> instancia o FileCopier com a lista de ignorados
 5. copy_all_projects -> executa a copia dos arquivos conforme as tarefas coletadas
 6. Cria o payload para o Slack e envia a mensagem
+7. Atualiza status do Monday.com
+8. Envia log para o Google Sheet
 '''
 
