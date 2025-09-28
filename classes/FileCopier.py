@@ -12,16 +12,18 @@ from typing import Iterable
 from functions import long_path
 
 CopyTask = namedtuple("CopyTask", ["source", "destination"])
+# config.get("project_types").get("V").get("ignore_list").get("file_extensions")
 
 
 class FileCopier:
-    def __init__(self, config: dict = {}):
+    def __init__(self, project_ignore_list):
         self.max_workers = self._detect_max_workers()
+
         self.ignored_file_extensions = set(
-            ext.lower() for ext in config.get("ignored_copy_file_extensions", [])
+            ext.lower() for ext in project_ignore_list.get("file_extensions", [])
         )
         self.ignored_folder_names = set(
-            name.lower() for name in config.get("ignored_copy_folder_names", [])
+            name.lower() for name in project_ignore_list.get("folder_names", [])
         )
 
         # === DEDUP: índices por destino (root) + lock ===

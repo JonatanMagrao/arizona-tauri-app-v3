@@ -111,11 +111,16 @@ DD_AIV_202_002_EN = "https://drive.google.com/drive/folders/1XqoC7xW9ldoayOjh3Gd
 DX_H_124_001_NOLANG = "https://drive.google.com/drive/folders/18bVqnWDr7Q9pZUmAmqBUaYWSz4lhzmdc"
 
 
-file_copier = FileCopier(config)
+# file_copier = FileCopier(config)
 projetos = build_projects(config, DS_V_024_002_EN)
 tasks = collect_copy_paths(projetos)
 metadata = get_full_metadata(projetos)
+file_copier = FileCopier(metadata[0].get("ignore_list"))
 
 print(json.dumps(metadata, indent=2, ensure_ascii=False, default=str))
 
 file_copier.copy_all_projects(tasks)
+
+# project_types = config.get("project_types").get("V").get("ignore_list").get("file_extensions")
+
+# print(json.dumps(project_types, indent=2, ensure_ascii=False, default=str))

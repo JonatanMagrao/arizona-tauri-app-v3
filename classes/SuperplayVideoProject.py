@@ -1,6 +1,7 @@
 from pathlib import Path
 from functions import normalize_old_project_name
 from classes.SuperplayProject import SuperplayProject
+from classes.FileCopier import FileCopier
 import re
 from typing import Optional
 
@@ -17,6 +18,8 @@ IGNORE_LIST = [
 class SuperplayVideoProject(SuperplayProject):
     def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path):
         super().__init__(config, gdrive_local_path, local_path)
+        self.ignore_list: dict = self.project_types.get(self.project_type).get("ignore_list")
+
 
     @property
     def duration(self) -> Optional[str]:
@@ -136,10 +139,11 @@ class SuperplayVideoProject(SuperplayProject):
         project = {
             "id": self.id,
             "project_name": self.project_name,
-            "game": self.games.get(self.game_code).get("name"),
+            "game": self.game_info.get(self.game_code).get("name"),
             "type_label": self.project_types.get(self.project_type).get("label"),
             "duration": self.duration,
             "language": self.supported_languages.get(self.language.lower()),
+            "ignore_list":self.ignore_list,
             "content": self.content,
             "copy_paths": copy_paths
         }

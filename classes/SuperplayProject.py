@@ -3,8 +3,6 @@ import os, re
 from pathlib import Path
 import re
 from typing import Optional
-from classes.FileCopier import FileCopier
-
 
 FILE_NAME_SUB_NORMALIZER = [
     r"_v\d{1,3}",
@@ -24,8 +22,6 @@ class SuperplayProject:
         self.project_types: dict = config.get("project_types")
         self.game_info: dict = config.get("games")
         self.supported_languages: dict = config.get("supported_languages")
-        self.games: dict = config.get("games")
-        self.ignore_list: dict = config.get("ignore_list")
 
         self.project_path_parts = self.gdrive_local_path.parts
         self.content = [*self.gdrive_local_path.iterdir()]
@@ -34,8 +30,6 @@ class SuperplayProject:
 
         self.test_path = config.get("test_path")
         self.test = True
-
-        self.file_copier = FileCopier(config)
 
     @property
     def game_name(self) -> Optional[str]:
@@ -82,8 +76,7 @@ class SuperplayProject:
             "project_iteration": self.iteration_number
         }
 
-    def _copy_tasks(self, tasks: list):
-        self.file_copier.copy_all_projects(tasks)
+    
 
     def find_path_anchor(self, folder_name: str, First: bool = True) -> Optional[Path]:
         """
