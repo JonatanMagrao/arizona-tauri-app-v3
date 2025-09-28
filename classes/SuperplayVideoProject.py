@@ -74,9 +74,10 @@ class SuperplayVideoProject(SuperplayProject):
     @property
     def master_folder_path(self) -> Path:
         root_master_folder_path = self.root_master_folder_path
+        sanitized_project_name = re.sub(r"_v\d{1,3}","",self.project_name,re.IGNORECASE)
 
         if not root_master_folder_path.exists():
-            return root_master_folder_path / self.project_name
+            return root_master_folder_path / sanitized_project_name
 
         if not root_master_folder_path.is_dir():
             raise NotADirectoryError(
@@ -86,7 +87,7 @@ class SuperplayVideoProject(SuperplayProject):
             if re.match(f"{self.game_code}-{self.project_type}-{self.project_number}-{self.iteration_number}_", folder_path.stem, flags=re.IGNORECASE):
                 return folder_path
 
-        return root_master_folder_path / self.project_name
+        return root_master_folder_path / sanitized_project_name
 
     @property
     def marketing_out_game_folder_path(self) -> Path:
@@ -111,9 +112,10 @@ class SuperplayVideoProject(SuperplayProject):
     @property
     def marketing_out_folder_path(self) -> Path:
         marketing_out_game_folder_path: Path = self.marketing_out_game_folder_path
+        sanitized_project_name = re.sub(r"_v\d{1,3}","",self.project_name,re.IGNORECASE)
 
         if not marketing_out_game_folder_path.exists():
-            return marketing_out_game_folder_path / self.project_name
+            return marketing_out_game_folder_path / sanitized_project_name
 
         if not marketing_out_game_folder_path.is_dir():
             raise NotADirectoryError(
@@ -123,7 +125,7 @@ class SuperplayVideoProject(SuperplayProject):
             if re.match(f"{self.game_code}-{self.project_type}-{self.project_number}-{self.iteration_number}_", folder_path.stem, flags=re.IGNORECASE):
                 return folder_path
 
-        return marketing_out_game_folder_path / self.project_name
+        return marketing_out_game_folder_path / sanitized_project_name
 
     @property
     def remove_from_out(self):
@@ -138,7 +140,7 @@ class SuperplayVideoProject(SuperplayProject):
         copy_paths = [self.gdrive_local_path, self.marketing_out_folder_path, self.master_folder_path]
         project = {
             "id": self.id,
-            "project_name": self.project_name,
+            "project_name": re.sub(r"_v\d{1,3}","",self.project_name,re.IGNORECASE),
             "game": self.game_info.get(self.game_code),
             "type_label": self.project_types.get(self.project_type).get("label"),
             "duration": self.duration,

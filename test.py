@@ -1,11 +1,5 @@
-nomes = {
-  "pt-br":{"language": "Portuguese", "abbr": "pt-br"},
-  "ar":{"language": "Arabic", "abbr": "ar"},
-  "kr":{"language": "Korean", "abbr": "kr"},
-}
+import re
+nome = "DS-V-024-002_Puzzle_DonaldDuck_EN_30s_v02"
 
-teste = nomes.pop("pt-br")
-teste = nomes.pop("ar")
-print(nomes)
-
-
+resultado = re.sub(r"_v\d{1,3}","",nome,re.IGNORECASE)
+print(resultado)

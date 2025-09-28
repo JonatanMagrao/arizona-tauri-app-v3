@@ -5,6 +5,8 @@ from project_discovery import (
 )
 from classes.FileCopier import FileCopier
 from classes.slack.SlackSuperplay import SlackSuperplay
+from classes.GoogleDriveHelper import GoogleDriveHelper
+from pathlib import Path
 import sys
 import json
 # sys.tracebacklimit = 0
@@ -115,25 +117,23 @@ DX_H_124_001_NOLANG = "https://drive.google.com/drive/folders/18bVqnWDr7Q9pZUmAm
 
 # ==================== Carregar projetos ====================
 slack = SlackSuperplay()
-projetos = build_projects(config, DD_V_137_060_EN)
+projetos = build_projects(config, DS_V_024_002_EN)
 tasks = collect_copy_paths(projetos)
 metadata = get_full_metadata(projetos)
 file_copier = FileCopier(metadata[0].get("ignore_list"))
+google = GoogleDriveHelper(config)
 
 # ==================== Copiar arquivos ====================
-# print(json.dumps(metadata, indent=2, ensure_ascii=False, default=str))
+print(json.dumps(metadata, indent=2, ensure_ascii=False, default=str))
 # file_copier.copy_all_projects(tasks)
 
 # ==================== Mandar mensagem para o Slack arquivos ====================
 channel_id = metadata[0].get("game").get("slack_channel_id")
 producers = ['andrei.sm@superplay.co', 'jonatan.m@superplay.co']
 project_name = metadata[0].get("project_name")
-project_link = "https://drive.google.com/open?id=1hYoyBj6E8-7dcb_RvTglKRj6JAhAKPLm&usp=drive_fs"
-video_path = metadata[0].get("copy_paths")[0]
-
-print(channel_id)
-print(project_name)
-print(video_path)
+project_link = google.get_mktout_folder_link(Path(metadata[0].get("copy_paths")[1]).stem)
+# video_path = metadata[0].get("copy_paths")[0] #! aqui preciso pegar o conteúdo, então fazer o filtro pra pegar o 1080x1080, 1920x1080, etc
+video_path = r"C:\Users\PC\Downloads\marketing_out_master_test\Render\MASTER\EN\DS-V-024-002_Puzzle_DonaldDuck_EN_30s\DS-V-024-002_Puzzle_DonaldDuck_EN_30s_1080x1080_v03.mp4"
 
 # slack.send_out_msg(channel_id,producers,project_name,project_link,video_path)
 
