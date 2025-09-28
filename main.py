@@ -59,7 +59,7 @@ config = {
             "label": "Video",
             "folder_path": "07-Videos",
             "ignore_list": {
-                "file_extensions": [".mov", ".avi", ".mkv"],
+                "file_extensions": [".mov", ".avi", ".mkv", ".gif"],
                 "folder_names": ["Archive", "_Archive"]
             }
         },
@@ -90,8 +90,6 @@ config = {
             "mktout_folder_name": "DX_DominoDreams_OUT"
         }
     },
-    "ignored_copy_file_extensions": [],
-    "ignored_copy_folder_names": ["_Archive"]
 
 }
 
@@ -105,14 +103,14 @@ DD_V_241_002_DE = "https://drive.google.com/open?id=1ktTBb6M3yLmWwBVu2Z3ypi0jvOV
 DS_V_014_025_LOC = "https://drive.google.com/drive/folders/1LW1kRvYLr0ZOgZN0-tNBxguB-bmIpuKh"
 DS_V_011_017_EN = "https://drive.google.com/drive/folders/1OYzPqjTWYuW_60U5OTec8VTbSwur1Q5v"
 DS_V_024_002_EN = "https://drive.google.com/drive/folders/1006tvx1QsAkUIOQKzvK5y8apMgu-3U3n"
+DS_V_018_041_LOC = "https://drive.google.com/drive/folders/15zvAuqpXUtQgufTxrq8juM4H6-eRApw-"
 
 DD_V_137_060_EN = "https://drive.google.com/drive/folders/13xS7EhYaAANwU6GieO5leQtW1mGggVnE"
 DD_AIV_202_002_EN = "https://drive.google.com/drive/folders/1XqoC7xW9ldoayOjh3GdnvDlMcaFp_KJf"
 DX_H_124_001_NOLANG = "https://drive.google.com/drive/folders/18bVqnWDr7Q9pZUmAmqBUaYWSz4lhzmdc"
 
 
-# file_copier = FileCopier(config)
-projetos = build_projects(config, DS_V_024_002_EN)
+projetos = build_projects(config, DS_V_018_041_LOC)
 tasks = collect_copy_paths(projetos)
 metadata = get_full_metadata(projetos)
 file_copier = FileCopier(metadata[0].get("ignore_list"))
@@ -120,7 +118,15 @@ file_copier = FileCopier(metadata[0].get("ignore_list"))
 print(json.dumps(metadata, indent=2, ensure_ascii=False, default=str))
 
 file_copier.copy_all_projects(tasks)
+#todo implementar slack criar slack payload e enviar mensagem pro slack
 
-# project_types = config.get("project_types").get("V").get("ignore_list").get("file_extensions")
+# sequencia lógica 
+'''
+1. build_projects -> cria os projetos
+2. collect_copy_paths -> coleta os caminhos de copia
+3. get_full_metadata -> coleta os metadados dos projetos
+4. FileCopier -> instancia o FileCopier com a lista de ignorados
+5. copy_all_projects -> executa a copia dos arquivos conforme as tarefas coletadas
+6. Cria o payload para o Slack e envia a mensagem
+'''
 
-# print(json.dumps(project_types, indent=2, ensure_ascii=False, default=str))
