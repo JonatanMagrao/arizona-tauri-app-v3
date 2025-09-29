@@ -22,13 +22,12 @@ def get_full_metadata(project_list: list):
     return project_metadata
 
 
-def collect_copy_paths(project_list: list):
+def collect_copy_paths(job_manifest: list[dict]):
+    try:
+        project_tasks = []
+        for item in job_manifest:
+            project_tasks.append(item.get("copy_paths"))
 
-    project_tasks = []
-    for projeto in project_list:
-        try:
-            project_tasks.append(projeto.job_manifest.get("copy_paths"))
-        except Exception as e:
-            print(f"Error processing project: {e}")
-            continue
-    return project_tasks
+        return project_tasks
+    except Exception as e:
+        raise e

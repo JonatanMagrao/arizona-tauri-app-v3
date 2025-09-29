@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Iterable
 from functions import find_file_in_tree_from
-from classes.SuperplayVideoProject import SuperplayVideoProject
+from classes.SuperplayVideoProjectCopy import SuperplayVideoProject
 from classes.LocalPathHelper import LocalPathHelper
 
 
@@ -44,14 +44,7 @@ class ProjectTypeIdentifier():
     @property
     def create_projects(self):
         if self._project_type == "Video":
-            if self._has_only_folder:
-                projects = []
-                for folder in self.gdrive_local_path.iterdir():
-                    if folder.is_dir():
-                        projects.append(SuperplayVideoProject(self._config, folder, self.local_path / folder.name))
-                return projects
-            
-            return [SuperplayVideoProject(self._config, self.gdrive_local_path, self.local_path)]
+            return SuperplayVideoProject(self._config, self.gdrive_local_path, self.local_path)
 
         else:
             raise NotImplementedError(f"⚠️  Project type '{self._project_type}' is not implemented yet.")

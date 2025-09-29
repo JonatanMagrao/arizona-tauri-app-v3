@@ -100,10 +100,10 @@ config = {
 }
 
 
-DS_V_042_001_EN = "https://drive.google.com/open?id=1tgRQu6s6E3l3NroUGeACmu8q84R482ex&usp=drive_fs"
+DS_V_042_001_EN = "https://drive.google.com/open?id=1tgRQu6s6E3l3NroUGeACmu8q84R482ex&usp=drive_fs" #archive
 DS_V_014_023_EN = "https://drive.google.com/open?id=168eU8anxBh3arp8Ds21jyrIjpH8Bl2v_&usp=drive_fs"
 DS_V_013_001_JA = "https://drive.google.com/open?id=12myejlO1hw4Io52OMNuBTRhkG4Z4_5be&usp=drive_fs"
-DD_V_195_008_EN = "https://drive.google.com/open?id=1dswXXO_WHILNRuOBXmGaBa8BIJRwftF3&usp=drive_fs"
+DD_V_195_008_EN = "https://drive.google.com/open?id=1dswXXO_WHILNRuOBXmGaBa8BIJRwftF3&usp=drive_fs" #thumbs and endcards
 DD_V_195_009_EN = "https://drive.google.com/open?id=1Up552KkWhKtDkBkAf_KlVfQo71C5gE5i&usp=drive_fs"
 DD_V_241_002_DE = "https://drive.google.com/open?id=1ktTBb6M3yLmWwBVu2Z3ypi0jvOVAMN-c&usp=drive_fs"
 DS_V_014_025_LOC = "https://drive.google.com/drive/folders/1LW1kRvYLr0ZOgZN0-tNBxguB-bmIpuKh"
@@ -118,13 +118,20 @@ DX_H_124_001_NOLANG = "https://drive.google.com/drive/folders/18bVqnWDr7Q9pZUmAm
 # ==================== Carregar projetos ====================
 slack = SlackSuperplay()
 projetos = build_projects(config, DD_V_195_008_EN)
-tasks = collect_copy_paths(projetos)
-metadata = get_full_metadata(projetos)
-file_copier = FileCopier()
-google = GoogleDriveHelper(config)
+job_manifest:list[dict] = projetos.job_manifest
+tasks = collect_copy_paths(job_manifest)
+
+print(json.dumps(job_manifest, indent=2, ensure_ascii=False, default=str))
+
+# print(json.dumps(tasks, indent=2, ensure_ascii=False, default=str))
+
+# metadata = get_full_metadata(projetos)
+# file_copier = FileCopier()
+# file_copier.copy_all_projects(tasks,projetos.ignore_list)
+# google = GoogleDriveHelper(config)
 
 # ==================== Copiar arquivos ====================
-print(json.dumps(metadata, indent=2, ensure_ascii=False, default=str))
+# print(json.dumps(metadata, indent=2, ensure_ascii=False, default=str))
 # file_copier.copy_all_projects(tasks)
 
 # ==================== Mandar mensagem para o Slack arquivos ====================
