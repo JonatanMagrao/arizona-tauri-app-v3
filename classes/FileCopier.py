@@ -16,15 +16,8 @@ CopyTask = namedtuple("CopyTask", ["source", "destination"])
 
 
 class FileCopier:
-    def __init__(self, project_ignore_list):
+    def __init__(self):
         self.max_workers = self._detect_max_workers()
-
-        self.ignored_file_extensions = set(
-            ext.lower() for ext in project_ignore_list.get("file_extensions", [])
-        )
-        self.ignored_folder_names = set(
-            name.lower() for name in project_ignore_list.get("folder_names", [])
-        )
 
         # === DEDUP: índices por destino (root) + lock ===
         self._dest_indexes: dict[Path, dict[int, list[Path]]] = {}
@@ -105,11 +98,6 @@ class FileCopier:
         idx, key_root = self._get_index(destination)
 
         for item in source.rglob("*"):
-            if item.is_file() and item.suffix.lower() in self.ignored_file_extensions:
-                continue
-            if any(part.lower() in self.ignored_folder_names for part in item.parts):
-                continue
-
             relative_path = item.relative_to(source)
             item_lp = long_path(item)
             target_path = destination / relative_path

@@ -44,6 +44,26 @@ class SuperplayVideoProject(SuperplayProject):
                 return match.group(1)
 
         raise ValueError("Language not found in project name.")
+    
+    @property
+    def filtered_content(self):
+        contents = []
+        ignore_file_extensions: list[str] = self.ignore_list.get("file_extensions")
+        ignore_folder_names: list[str] = self.ignore_list.get("folder_names")
+        
+        ignore_exts = {ext.lower().strip() for ext in ignore_file_extensions}
+        ignore_folders = {name.lower().strip() for name in ignore_folder_names}
+
+        for item in self.content:
+            if item.is_file() and item.stem.lower().strip() not in ignore_exts:
+                contents.append(item)
+
+            if item.is_dir() and item.stem.lower().strip() not in ignore_folders:
+                contents.append(item)
+
+        return contents
+        
+
 
     @property
     def root_master_folder_path(self) -> Path:
@@ -51,6 +71,20 @@ class SuperplayVideoProject(SuperplayProject):
             return Path(self.test_path) / "Render" / "MASTER" / self.language.upper()
         else:
             return self.find_path_anchor("Render") / "MASTER" / self.language.upper()
+    
+    @property
+    def video_to_preview_path(self):
+        for item in self.gdrive_local_path.iterdir():
+            if item.is_file() and item.suffix.lower() == ".mp4":
+                if re.search(r"_1080x1080",item.stem,flags=re.IGNORECASE):
+                    return item
+                
+                if re.search(r"_1920x1080",item.stem,flags=re.IGNORECASE):
+                    return item
+                
+                return item
+            
+        raise Exception("Video to preview not found")
 
     @property
     def root_marketing_out_folder_path(self) -> Path:
@@ -145,8 +179,8 @@ class SuperplayVideoProject(SuperplayProject):
             "type_label": self.project_types.get(self.project_type).get("label"),
             "duration": self.duration,
             "language": self.supported_languages.get(self.language.lower()),
-            "ignore_list":self.ignore_list,
-            "content": self.content,
+            "content": self.filtered_content,
+            "video_to_preview":self.video_to_preview_path,
             "copy_paths": copy_paths
         }
         return project
