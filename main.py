@@ -108,7 +108,7 @@ DD_V_195_009_EN = "https://drive.google.com/open?id=1Up552KkWhKtDkBkAf_KlVfQo71C
 DD_V_241_002_DE = "https://drive.google.com/open?id=1ktTBb6M3yLmWwBVu2Z3ypi0jvOVAMN-c&usp=drive_fs"
 DS_V_014_025_LOC = "https://drive.google.com/drive/folders/1LW1kRvYLr0ZOgZN0-tNBxguB-bmIpuKh"
 DS_V_011_017_EN = "https://drive.google.com/drive/folders/1OYzPqjTWYuW_60U5OTec8VTbSwur1Q5v"
-DS_V_024_002_EN = "https://drive.google.com/drive/folders/1006tvx1QsAkUIOQKzvK5y8apMgu-3U3n"
+DS_V_024_002_EN = "https://drive.google.com/drive/folders/1006tvx1QsAkUIOQKzvK5y8apMgu-3U3n" # with versions in file names
 DS_V_018_041_LOC = "https://drive.google.com/drive/folders/15zvAuqpXUtQgufTxrq8juM4H6-eRApw-"
 
 DD_V_137_060_EN = "https://drive.google.com/drive/folders/13xS7EhYaAANwU6GieO5leQtW1mGggVnE"
@@ -117,13 +117,13 @@ DX_H_124_001_NOLANG = "https://drive.google.com/drive/folders/18bVqnWDr7Q9pZUmAm
 
 # ==================== Carregar projetos ====================
 slack = SlackSuperplay()
-projetos = build_projects(config, DD_V_195_008_EN)
+projetos = build_projects(config, DS_V_014_025_LOC)
 job_manifest:list[dict] = projetos.job_manifest
 tasks = collect_copy_paths(job_manifest)
 
-print(json.dumps(job_manifest, indent=2, ensure_ascii=False, default=str))
+projetos.dispatch_out
 
-# print(json.dumps(tasks, indent=2, ensure_ascii=False, default=str))
+# print(json.dumps(job_manifest, indent=2, ensure_ascii=False, default=str))
 
 # metadata = get_full_metadata(projetos)
 # file_copier = FileCopier()

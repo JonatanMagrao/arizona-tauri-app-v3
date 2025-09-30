@@ -7,13 +7,12 @@ import psutil
 import filecmp
 import threading
 import time
-from typing import Iterable
+from typing import Iterable, Union, Optional, Sequence
 
 from functions import long_path
 
 CopyTask = namedtuple("CopyTask", ["source", "destination"])
-# config.get("project_types").get("V").get("ignore_list").get("file_extensions")
-
+PathLike = Union[str, Path]
 
 class FileCopier:
     def __init__(self):
@@ -134,12 +133,12 @@ class FileCopier:
 
         for attempt in range(max_retries):
             try:
-                if source.is_file() and source.suffix.lower() in self.ignored_file_extensions:
-                    print(f"⏭️  Skipping excluded file: {source}")
-                    return
-                if source.is_dir() and source.name.lower() in self.ignored_folder_names:
-                    print(f"⏭️  Skipping excluded folder: {source}")
-                    return
+                # if source.is_file() and source.suffix.lower() in self.ignored_file_extensions:
+                #     print(f"⏭️  Skipping excluded file: {source}")
+                #     return
+                # if source.is_dir() and source.name.lower() in self.ignored_folder_names:
+                #     print(f"⏭️  Skipping excluded folder: {source}")
+                #     return
 
                 if source.is_file():
                     # === DEDUP: pular se já existir arquivo idêntico em QUALQUER lugar do destino
@@ -194,7 +193,7 @@ class FileCopier:
             for item in group[1:]:
                 if not item:
                     continue
-                dstn = Path(item)
+                dstn = Path(item)   
                 if dstn == src or dstn in seen:
                     continue
                 seen.add(dstn)
@@ -210,3 +209,28 @@ class FileCopier:
             for dest in task[1:]:
                 print(f"\tTo: {dest}")
             print("")
+
+    def copy_variadic_groups(self, groups: Iterable[Sequence[PathLike]]):
+        """
+        Recebe grupos no formato (src, dest1, dest2, ...)
+        e dispara as cópias reaproveitando copy_tasks().
+        """
+        tasks: list[CopyTask] = []
+        for group in groups:
+            if not group or len(group) < 2:
+                continue  # precisa de src + pelo menos 1 destino
+
+            src = Path(group[0])
+
+            seen: set[Path] = set()
+            for dest in group[1:]:
+                if not dest:
+                    continue
+                dstn = Path(dest)
+                if dstn == src or dstn in seen:
+                    continue
+                seen.add(dstn)
+                tasks.append(CopyTask(source=src, destination=dstn))
+
+        if tasks:
+            self.copy_tasks(tasks)
