@@ -2,7 +2,7 @@ from pathlib import Path
 from functions import normalize_old_project_name, build_task
 from classes.SuperplayProject import SuperplayProject
 from classes.FileCopier import FileCopier
-import re
+import re, json
 from typing import Optional
 
 LANGUAGE_PATTERN_LIST = [
@@ -19,15 +19,13 @@ class SuperplayVideoProject(SuperplayProject):
     def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path):
         super().__init__(config, gdrive_local_path, local_path)
         self.ignore_list: dict = self.project_types.get(self.project_type).get("ignore_list")
-        self.filtered_content = self._filter_content(self.content)
 
     @property
     def _has_only_folder(self) -> bool:
         return all([content.is_dir() for content in self.content])
 
     def _get_project_name(self, src_folder: list[Path]) -> str:
-        remove_resolution = re.compile(
-            r"_\d{2,4}x\d{2,4}", flags=re.IGNORECASE)
+        remove_resolution = re.compile(r"_\d{2,4}x\d{2,4}", flags=re.IGNORECASE)
         for item in src_folder:
             if item.is_file() and item.suffix.lower() == ".mp4":
                 return remove_resolution.sub("", item.stem)
@@ -36,6 +34,7 @@ class SuperplayVideoProject(SuperplayProject):
 
     def _build_project(self, src_folder: Path) -> dict:
         project_content = [*src_folder.iterdir()]
+        filtered_project_content = self._filter_solo_content(project_content)
         project_id = self.id
         project_name = self._get_project_name(project_content)
         game = self.game_info.get(self.game_code)
@@ -49,7 +48,7 @@ class SuperplayVideoProject(SuperplayProject):
         root_mktout_folder_path = self._root_marketing_out_folder_path(language)
         mktout_game_folder_path = self._marketing_out_game_folder_path(root_mktout_folder_path)
 
-        src_folder_path = Path(src_folder)
+        #todo aqui, fazer validação para quando for mais de um projeto para pegar os nomes dos arquivos certinho
         mktout_folder_path = self._marketing_out_folder_path(mktout_game_folder_path, project_name)
         master_folder_path = self._master_folder_path(root_master_folder_path, project_name)
 
@@ -60,10 +59,9 @@ class SuperplayVideoProject(SuperplayProject):
             "type_label": type_label,
             "duration": duration,
             "language": language_full_info,
-            "content_to_copy": self.filtered_content,
+            "content_to_copy": filtered_project_content,
             "video_to_preview": video_to_preview_path,
-            # "copy_paths": [src_folder_path, mktout_folder_path, master_folder_path]
-            "copy_paths": build_task(self._sanitize_video_file_name, self.filtered_content, [mktout_folder_path,master_folder_path])
+            "copy_paths": build_task(self._sanitize_video_file_name, filtered_project_content, [mktout_folder_path,master_folder_path])
         }
 
         return project
@@ -74,13 +72,17 @@ class SuperplayVideoProject(SuperplayProject):
         #! preciso adaptar para o novo formato. aqui ele tá passando o path da pasta, não dos arquivos. eu preciso dos arquivos para pegar o nome
         if self._has_only_folder:
             projetos = []
+            import json
             for src_folder in self.content:
-                project = self._build_project(src_folder)
+                contents = [*Path(src_folder).iterdir()]
+                content_path = contents[0].parent
+                project = self._build_project(content_path)
                 projetos.append(project)
             return projetos
 
         else:
             return [self._build_project(self.gdrive_local_path)]
+        
         
     def _sanitize_video_file_name(self,file: Path) -> str:
         remove_version = re.compile(r"_v\d{1,3}", flags=re.IGNORECASE)
@@ -111,7 +113,7 @@ class SuperplayVideoProject(SuperplayProject):
 
         raise ValueError("Language not found in project name.")
 
-    def _filter_content(self,content:list[Path]) -> list[Path]:
+    def _filter_solo_content(self,content:list[Path]) -> list[Path]:
         contents = []
         ignore_file_extensions: list[str] = self.ignore_list.get("file_extensions")
         ignore_folder_names: list[str] = self.ignore_list.get("folder_names")
@@ -127,7 +129,7 @@ class SuperplayVideoProject(SuperplayProject):
                 contents.append(item)
 
         return contents
-
+    
     def _root_master_folder_path(self, language: str) -> Path:
         if self.test:
             return Path(self.test_path) / "Render" / "MASTER" / language.upper()
@@ -161,13 +163,13 @@ class SuperplayVideoProject(SuperplayProject):
             if self.test:
                 return Path(self.test_path) / "Marketing OUT" / game_code_path / type_folder_path / language
             else:
-                return Path(self.marketing_out_folder_path) / game_code_path / type_folder_path / language
+                return Path(self.mktout_base_path) / game_code_path / type_folder_path / language
 
         except Exception as e:
             raise e
 
     def _master_folder_path(self, root_master_folder_path: Path, project_name) -> Path:
-        sanitized_project_name = re.sub(r"_v\d{1,3}", "", project_name, re.IGNORECASE)
+        sanitized_project_name = re.sub(r"_v\d{1,3}", "", project_name, flags= re.IGNORECASE)
 
         if not root_master_folder_path.exists():
             return root_master_folder_path / sanitized_project_name
@@ -201,7 +203,7 @@ class SuperplayVideoProject(SuperplayProject):
         return root_marketing_out_folder_path / normalize_old_project_name(self.game_name)
 
     def _marketing_out_folder_path(self, marketing_out_game_folder_path: Path, project_name: str) -> Path:
-        sanitized_project_name = re.sub(r"_v\d{1,3}", "", project_name, re.IGNORECASE)
+        sanitized_project_name = re.sub(r"_v\d{1,3}", "", project_name, flags=re.IGNORECASE)
 
         if not marketing_out_game_folder_path.exists():
             return marketing_out_game_folder_path / sanitized_project_name
@@ -213,7 +215,7 @@ class SuperplayVideoProject(SuperplayProject):
         for folder_path in sorted(marketing_out_game_folder_path.iterdir()):
             if re.match(f"{self.game_code}-{self.project_type}-{self.project_number}-{self.iteration_number}_", folder_path.stem, flags=re.IGNORECASE):
                 return folder_path
-
+            
         return marketing_out_game_folder_path / sanitized_project_name
     
     @property

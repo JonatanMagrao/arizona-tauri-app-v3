@@ -73,13 +73,16 @@ def build_task(sanitizer:Callable[[Path], str], contents: list[str], out_paths: 
     """
     tasks = []
 
-    for content in contents:
-        new_file_name = sanitizer(Path(content))
-        task = [content] # here is the source
+    try:
+        for content in contents:
+            new_file_name = sanitizer(Path(content))
+            task = [content] # here is the source
 
-        for out_path in out_paths:
-            task.append(out_path / f"{new_file_name}")
+            for out_path in out_paths:
+                task.append(out_path / f"{new_file_name}")
 
-        tasks.append(task)
+            tasks.append(task)
 
-    return tasks
+        return tasks
+    except PermissionError as e:
+        raise PermissionError(f"⚠️ Permission denied: {e}")

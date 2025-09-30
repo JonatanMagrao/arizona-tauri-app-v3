@@ -53,14 +53,21 @@ class FileCopier:
             self._dest_indexes[key] = idx
 
     def _get_index(self, root: Path):
-        """Retorna (idx_mutavel, key_root)."""
+        """Retorna (idx_mutavel, key_root). Sempre garante existência do índice."""
         key = long_path(root).resolve()
         with self._index_lock:
             idx = self._dest_indexes.get(key)
+
         if idx is None:
+            # tenta construir (fora do lock pesado) e registrar
             self._ensure_index(root)
             with self._index_lock:
-                idx = self._dest_indexes[key]
+                idx = self._dest_indexes.get(key)
+                if idx is None:
+                    # fallback anti-raça: garante um índice vazio
+                    idx = defaultdict(list)
+                    self._dest_indexes[key] = idx
+
         return idx, key
 
     def _register_in_index(self, key_root: Path, file_path: Path):
@@ -168,17 +175,18 @@ class FileCopier:
                     print(f"❌ Falha permanente em {source}")
 
     def copy_tasks(self, tasks: list[CopyTask]):
-        # Pré-cria índices dos destinos (evita reconstruções por thread)
         roots = set()
         for t in tasks:
             root = t.destination if t.source.is_dir() else t.destination.parent
-            roots.add(root)
+            # normalize a mesma “key” usada internamente
+            root_key = long_path(root).resolve()
+            roots.add(root_key)
+
         for r in roots:
             self._ensure_index(r)
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            futures = [executor.submit(self._copy_item, task)
-                       for task in tasks]
+            futures = [executor.submit(self._copy_item, task) for task in tasks]
             for f in futures:
                 f.result()
 
