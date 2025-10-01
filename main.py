@@ -118,46 +118,56 @@ DX_H_124_001_NOLANG = "https://drive.google.com/drive/folders/18bVqnWDr7Q9pZUmAm
 # ==================== Carregar projetos ====================
 timer = EventTimer()
 slack = SlackSuperplay()
+google = GoogleDriveHelper(config)
 
 timer.start("build_projects")
-projetos = build_projects(config, DX_H_124_001_NOLANG)
+projeto = build_projects(config, DS_V_018_041_LOC)
 timer.end("build_projects")
 
 timer.start("job_manifest")
-job_manifest:list[dict] = projetos.job_manifest
+job_manifest:list[dict] = projeto.job_manifest
 timer.end("job_manifest")
 
-print(json.dumps(job_manifest, indent=2, ensure_ascii=False, default=str))
-
-timer.start("dispatch_out")
-projetos.dispatch_out
-timer.end("dispatch_out")
-
-timer.log()
+# print(json.dumps(job_manifest, indent=2, ensure_ascii=False, default=str))
 
 
-# metadata = get_full_metadata(projetos)
-# file_copier = FileCopier()
-# file_copier.copy_all_projects(tasks,projetos.ignore_list)
-# google = GoogleDriveHelper(config)
+# timer.start("dispatch_out")
+# projetos.dispatch_out
+# timer.end("dispatch_out")
 
-# ==================== Copiar arquivos ====================
-# print(json.dumps(metadata, indent=2, ensure_ascii=False, default=str))
-# file_copier.copy_all_projects(tasks)
+# timer.log()
+
+
 
 # ==================== Mandar mensagem para o Slack arquivos ====================
-# slack_payload: dict = metadata[0]
-# slack_channel_id = slack_payload.get("game").get("slack_channel_id")
-# producers = ['andrei.sm@superplay.co', 'jonatan.m@superplay.co']
-# project_name = slack_payload.get("project_name")
-# project_link = Path(slack_payload.get("copy_paths")[1].stem)
-# video_path = slack_payload.get("video_to_preview")
 
-# channel_id = slack_channel_id
-# producers = producers
-# project_name = project_name
-# project_link = google.get_mktout_folder_link(project_link)
-# video_path = video_path
+for slack_payload in job_manifest:
+    slack_channel_id = slack_payload.get("game").get("slack_channel_id")
+    producers = ['andrei.sm@superplay.co', 'jonatan.m@superplay.co']
+    project_name = slack_payload.get("project_name")
+    video_path = slack_payload.get("video_to_preview")
+
+    channel_id = slack_channel_id
+    producers = producers
+    project_name = project_name
+    project_link = google.get_mktout_folder_link(project_name)
+    video_path = video_path
+
+    if len(project_link) < 1:
+        print(f"Project link not found for: {project_name}")
+        continue
+
+    if len(project_link) > 2:
+        print(f"More than one project link found for: {project_name}")
+        continue
+
+    print(channel_id)
+    print(producers)
+    print(project_name)
+    print(project_link[0])
+    print(video_path)
+    print("\n")
+
 
 # slack.send_out_msg(channel_id,producers,project_name,project_link,video_path)
 

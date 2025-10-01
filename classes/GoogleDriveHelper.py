@@ -69,4 +69,4 @@ class GoogleDriveHelper:
         ]
 
         # devolve string se for só um link; lista caso contrário
-        return links[0] if len(links) == 1 else links
+        return links

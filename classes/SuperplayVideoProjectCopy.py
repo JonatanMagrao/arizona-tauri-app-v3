@@ -23,14 +23,28 @@ class SuperplayVideoProject(SuperplayProject):
     @property
     def _has_only_folder(self) -> bool:
         return all([content.is_dir() for content in self.content])
+   
+    def _get_project_name(self, src_folder: list[str]) -> str:
+        path_list = [Path(item) for item in src_folder]
 
-    def _get_project_name(self, src_folder: list[Path]) -> str:
-        remove_resolution = re.compile(r"_\d{2,4}x\d{2,4}", flags=re.IGNORECASE)
-        for item in src_folder:
-            if item.is_file() and item.suffix.lower() == ".mp4":
-                return remove_resolution.sub("", item.stem)
+        cleanner_list = [
+            re.compile(r"_\d{2,4}x\d{2,4}", flags=re.IGNORECASE), # remove resolution in the name
+            re.compile(r"_v\d{1,3}", flags=re.IGNORECASE), # remove version in the name
+        ]
 
-        raise Exception("Video to preview not found")
+        sanitize_list = [
+            re.compile(r"\s*_\s*", flags=re.IGNORECASE), # remove extra spaces with the underscore
+        ]
+
+        project_title = next(item.stem for item in path_list if item.is_file() and item.suffix.lower() == ".mp4")
+
+        for cleaner in cleanner_list:
+            project_title = cleaner.sub("", project_title)
+
+        for sanitizer in sanitize_list:
+            project_title = sanitizer.sub("_", project_title)
+
+        return project_title
 
     def _build_project(self, src_folder: Path) -> dict:
         project_content = [*src_folder.iterdir()]
@@ -84,9 +98,9 @@ class SuperplayVideoProject(SuperplayProject):
             return [self._build_project(self.gdrive_local_path)]
         
         
-    def _sanitize_video_file_name(self,file: Path) -> str:
+    def _sanitize_video_file_name(self, file_path: Path) -> str:
         remove_version = re.compile(r"_v\d{1,3}", flags=re.IGNORECASE)
-        final_file_path_name = remove_version.sub("", file.name)
+        final_file_path_name = remove_version.sub("", file_path.name)
 
         return final_file_path_name
 
@@ -136,19 +150,26 @@ class SuperplayVideoProject(SuperplayProject):
         else:
             return self.find_path_anchor("Render") / "MASTER" / language.upper()
 
-    #! melhorar. está indo pelo for, mas precisa procurar primeiro por 1080x1080 ao invés de iterar
-    def _video_to_preview_path(self, src_folder: list):
-        for item in src_folder:
-            if item.is_file() and item.suffix.lower() == ".mp4":
-                if re.search(r"_1080x1080", item.stem, flags=re.IGNORECASE):
-                    return item
+    def _video_to_preview_path(self, src_folder: list[str]) -> Path:
+        # .mp4 exists?
+        if not any(Path(item).is_file() and Path(item).suffix.lower() == ".mp4" for item in src_folder):
+            raise FileNotFoundError("Video to preview not found")
 
-                if re.search(r"_1920x1080", item.stem, flags=re.IGNORECASE):
-                    return item
+        # working only with .mp4 and Path
+        mp4_files = [Path(item) for item in src_folder if Path(item).is_file() and Path(item).suffix.lower() == ".mp4"]
 
+        # 1º stop: 1080x1080
+        for item in mp4_files:
+            if re.search(r"_1080x1080", item.stem, flags=re.IGNORECASE):
                 return item
 
-        raise Exception("Video to preview not found")
+        # 2º stopa: 1920x1080
+        for item in mp4_files:
+            if re.search(r"_1920x1080", item.stem, flags=re.IGNORECASE):
+                return item
+
+        # fallback: any .mp4 file
+        return mp4_files[0]
 
     def _root_marketing_out_folder_path(self, language: str) -> Path:
 

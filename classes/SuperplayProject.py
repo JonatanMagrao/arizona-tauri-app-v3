@@ -55,13 +55,13 @@ class SuperplayProject:
         raise ValueError("Project name not found in path parts.")
 
     @property
-    def project_name(self) -> Optional[str]:
+    def project_title(self) -> Optional[str]:
         file = find_file_in_tree_from(self.gdrive_local_path,".mp4")
         remove_resolution = re.compile(r"_\d{2,4}x\d{2,4}", flags=re.IGNORECASE)
         return remove_resolution.sub("", file.stem)
 
     def _parse_project_id(self) -> None:
-        parts = self.project_name.split("-")
+        parts = self.project_title.split("-")
         self.game_code = parts[0]
         self.project_type = parts[1]
         self.project_number = parts[2]

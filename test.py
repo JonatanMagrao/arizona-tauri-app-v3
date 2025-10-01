@@ -46,10 +46,15 @@ def build_task(sanitizer:Callable[[Path], str], contents: list[str], out_paths: 
 
     return tasks
 
-out_paths = [Path(mktout_path), Path(master_path)]
-tasks = build_task(sanitize_file_name, content, out_paths)
+# out_paths = [Path(mktout_path), Path(master_path)]
+# tasks = build_task(sanitize_file_name, content, out_paths)
 
 # file_copier = FileCopier()
 # file_copier.copy_variadic_groups(tasks)
 
 # print(json.dumps(tasks, indent=2, ensure_ascii=False, default=str))
+
+name = "DS-V-014-025_BuildSplit _MoanaReverse_DS-H-009-001_EN_35s"
+
+compilar = re.compile(r"\s*_\s*", flags=re.IGNORECASE)
+print(compilar.sub("_", name))
