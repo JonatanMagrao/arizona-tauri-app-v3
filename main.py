@@ -121,64 +121,29 @@ slack = SlackSuperplay()
 google = GoogleDriveHelper(config)
 
 timer.start("build_projects")
-projeto = build_projects(config, DS_V_018_041_LOC)
+projeto = build_projects(config, DD_V_137_060_EN)
 timer.end("build_projects")
 
 timer.start("job_manifest")
 job_manifest:list[dict] = projeto.job_manifest
+slack_payload = projeto.build_slack_payload
 timer.end("job_manifest")
 
 # print(json.dumps(job_manifest, indent=2, ensure_ascii=False, default=str))
 
-
 # timer.start("dispatch_out")
-# projetos.dispatch_out
+# projeto.dispatch_out()
 # timer.end("dispatch_out")
 
 # timer.log()
 
-
-
-# ==================== Mandar mensagem para o Slack arquivos ====================
-
-for slack_payload in job_manifest:
-    slack_channel_id = slack_payload.get("game").get("slack_channel_id")
-    producers = ['andrei.sm@superplay.co', 'jonatan.m@superplay.co']
-    project_name = slack_payload.get("project_name")
-    video_path = slack_payload.get("video_to_preview")
-
-    channel_id = slack_channel_id
-    producers = producers
-    project_name = project_name
-    project_link = google.get_mktout_folder_link(project_name)
-    video_path = video_path
-
-    if len(project_link) < 1:
-        print(f"Project link not found for: {project_name}")
-        continue
-
-    if len(project_link) > 2:
-        print(f"More than one project link found for: {project_name}")
-        continue
-
-    print(channel_id)
-    print(producers)
-    print(project_name)
-    print(project_link[0])
-    print(video_path)
-    print("\n")
-
-
-# slack.send_out_msg(channel_id,producers,project_name,project_link,video_path)
+projeto.send_slack_message()
 
 # sequencia lógica 
 '''
 1. build_projects -> cria os projetos
-2. collect_copy_paths -> coleta os caminhos de copia
-3. get_full_metadata -> coleta os metadados dos projetos
-4. FileCopier -> instancia o FileCopier com a lista de ignorados
-5. copy_all_projects -> executa a copia dos arquivos conforme as tarefas coletadas
-6. Cria o payload para o Slack e envia a mensagem
+4. projeto.dispatch_out -> Copia os arquivos e pastas para as outras pastas
+6. Envia log para o Slack
 7. Atualiza status do Monday.com
 8. Envia log para o Google Sheet
 '''

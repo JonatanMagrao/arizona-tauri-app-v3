@@ -1,4 +1,6 @@
 from functions import find_file_in_tree_from
+from classes.GoogleDriveHelper import GoogleDriveHelper
+from classes.slack.SlackSuperplay import SlackSuperplay
 import os, re
 from pathlib import Path
 import re
@@ -17,6 +19,8 @@ FOLDER_NAME_SUB_NORMALIZER = [
 class SuperplayProject:
     def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path):
 
+        self.google_util = GoogleDriveHelper(config)
+        self.slack_util = SlackSuperplay()
         self.gdrive_local_path = gdrive_local_path
         self.local_path = local_path
         self.project_types: dict = config.get("project_types")

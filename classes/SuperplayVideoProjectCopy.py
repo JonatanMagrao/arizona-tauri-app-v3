@@ -83,6 +83,7 @@ class SuperplayVideoProject(SuperplayProject):
 
     @property
     def job_manifest(self):
+        #! @property seria ideal apenas para recuperar dados sem risco de erro, quando dados já estão prontos e disponíveis e sem I/O. por conta do contents e project com o _build_project, seria interessante ou criar uma validação pra isso com try catch antes ou criar uma outra função auxiliar apenas para ajudar na construção disso. se der algum erro, nem chega aqui e avisa o usuário
         #! preciso adaptar para o novo formato. aqui ele tá passando o path da pasta, não dos arquivos. eu preciso dos arquivos para pegar o nome
         if self._has_only_folder:
             projetos = []
@@ -239,7 +240,6 @@ class SuperplayVideoProject(SuperplayProject):
             
         return marketing_out_game_folder_path / sanitized_project_name
     
-    @property
     def dispatch_out(self):
         #! está funcionando apenas com projeto solo, não com localized ou combo
         job_manifest: dict = self.job_manifest
@@ -248,6 +248,51 @@ class SuperplayVideoProject(SuperplayProject):
         for job in job_manifest:            
             task = job.get("copy_paths")
             file_copier.copy_variadic_groups(task)
+
+    @property
+    def build_slack_payload(self):
+        #! @property seria ideal apenas para recuperar dados sem risco de erro, quando dados já estão prontos e disponíveis e sem I/O. por conta do contents e project com o _build_project, seria interessante ou criar uma validação pra isso com try catch antes ou criar uma outra função auxiliar apenas para ajudar na construção disso. se der algum erro, nem chega aqui e avisa o usuário
+        job_manifest = self.job_manifest
+        slack_payload = []
+        for job in job_manifest:
+            
+            slack_channel_id = job.get("game").get("slack_channel_id")
+            producers = ['andrei.sm@superplay.co', 'jonatan.m@superplay.co']
+            project_name = job.get("project_name")
+            project_link = self.google_util.get_mktout_folder_link(project_name)
+            video_path = job.get("video_to_preview")
+
+
+            #! estudar forma para retornar caso dê erro. volta pro usuário? cancela toda a operação do slack? manda apenas os que foram processados? etc
+            if len(project_link) < 1:
+                print(f"Project link not found for: {project_name}")
+                continue
+
+            if len(project_link) > 2:
+                print(f"More than one project link found for: {project_name}")
+                continue
+
+            slack_payload.append({
+                "channel_id": slack_channel_id,
+                "producers": producers,
+                "project_name": project_name,
+                "project_link": project_link[0],
+                "video_path": video_path
+            })
+        
+        return slack_payload
+
+    def send_slack_message(self):
+        slack_payload: dict = self.build_slack_payload[0]
+
+        channel_id = slack_payload.get("channel_id")
+        producers = slack_payload.get("producers")
+        project_name = slack_payload.get("project_name")
+        project_link = slack_payload.get("project_link")
+        video_path = slack_payload.get("video_path")
+
+        self.slack_util.send_out_msg(channel_id, producers, project_name, project_link, video_path)
+
 
 
     @property
