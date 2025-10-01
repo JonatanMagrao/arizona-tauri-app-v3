@@ -39,10 +39,8 @@ class SuperplayProject:
         2. Se não encontrar, tenta: 'AA_0000_'
         3. Se nada for encontrado, retorna None.
         """
-        pattern_old = re.compile(
-            r"[A-Z]{2}_\d{3,4}_",            flags=re.IGNORECASE)
-        pattern_new = re.compile(
-            r"[A-Z]{2}-[A-Z]{1,3}-\d{3,4}_", flags=re.IGNORECASE)
+        pattern_old = re.compile(r"[A-Z]{2}_\d{3,4}_",            flags=re.IGNORECASE)
+        pattern_new = re.compile(r"[A-Z]{2}-[A-Z]{1,3}-\d{3,4}_", flags=re.IGNORECASE)
 
         for item in self.project_path_parts:
             if pattern_old.match(item):
@@ -55,13 +53,13 @@ class SuperplayProject:
         raise ValueError("Project name not found in path parts.")
 
     @property
-    def project_name(self) -> Optional[str]:
+    def project_title(self) -> Optional[str]:
         file = find_file_in_tree_from(self.gdrive_local_path,".mp4")
         remove_resolution = re.compile(r"_\d{2,4}x\d{2,4}", flags=re.IGNORECASE)
         return remove_resolution.sub("", file.stem)
 
     def _parse_project_id(self) -> None:
-        parts = self.project_name.split("-")
+        parts = self.project_title.split("-")
         self.game_code = parts[0]
         self.project_type = parts[1]
         self.project_number = parts[2]
@@ -74,9 +72,7 @@ class SuperplayProject:
             "project_type": self.project_type,
             "project_number": self.project_number,
             "project_iteration": self.iteration_number
-        }
-
-    
+        }    
 
     def find_path_anchor(self, folder_name: str, First: bool = True) -> Optional[Path]:
         """

@@ -6,8 +6,7 @@ from classes.slack.SlackSuperplay import SlackSuperplay
 from classes.GoogleDriveHelper import GoogleDriveHelper
 from classes.EventTimer import EventTimer
 from pathlib import Path
-import sys
-import json
+import sys, json, os
 # sys.tracebacklimit = 0
 
 config = {
@@ -62,8 +61,7 @@ config = {
             "folder_path": "07-Videos",
             "ignore_list": {
                 "file_extensions": [".mov", ".avi", ".mkv", ".gif"],
-                # "folder_names": ["Archive", "_Archive", "Thumbs", "EndCards"]
-                "folder_names": ["Archive", "_Archive"]
+                "folder_names": ["Archive", "_Archive", "Thumbs", "EndCards"]
             }
         },
         "H": {
@@ -111,6 +109,7 @@ DS_V_011_017_EN = "https://drive.google.com/drive/folders/1OYzPqjTWYuW_60U5OTec8
 DS_V_024_002_EN = "https://drive.google.com/drive/folders/1006tvx1QsAkUIOQKzvK5y8apMgu-3U3n" # with versions in file names
 DS_V_018_041_LOC = "https://drive.google.com/drive/folders/15zvAuqpXUtQgufTxrq8juM4H6-eRApw-"
 DD_V_137_060_EN = "https://drive.google.com/drive/folders/13xS7EhYaAANwU6GieO5leQtW1mGggVnE" # with thumbs and endcards
+DS_V_020_003_EN = "https://drive.google.com/drive/folders/1BYpr7hVY5JwGrmZfvmedgEsIo5V_Ek9W"
 
 DD_AIV_202_002_EN = "https://drive.google.com/drive/folders/1XqoC7xW9ldoayOjh3GdnvDlMcaFp_KJf"
 DX_H_124_001_NOLANG = "https://drive.google.com/drive/folders/18bVqnWDr7Q9pZUmAmqBUaYWSz4lhzmdc"
@@ -118,58 +117,53 @@ DX_H_124_001_NOLANG = "https://drive.google.com/drive/folders/18bVqnWDr7Q9pZUmAm
 # ==================== Carregar projetos ====================
 timer = EventTimer()
 slack = SlackSuperplay()
+google = GoogleDriveHelper(config)
 
 timer.start("build_projects")
-projetos = build_projects(config, DX_H_124_001_NOLANG)
+projeto = build_projects(config, DD_V_137_060_EN)
 timer.end("build_projects")
 
 timer.start("job_manifest")
-job_manifest:list[dict] = projetos.job_manifest
+job_manifest:list[dict] = projeto.job_manifest
 timer.end("job_manifest")
 
-print(json.dumps(job_manifest, indent=2, ensure_ascii=False, default=str))
+# print(json.dumps(job_manifest, indent=2, ensure_ascii=False, default=str))
 
-timer.start("dispatch_out")
-projetos.dispatch_out
-timer.end("dispatch_out")
+# timer.start("dispatch_out")
+# projeto.dispatch_out
+# timer.end("dispatch_out")
 
-timer.log()
+# timer.log()
 
-
-# metadata = get_full_metadata(projetos)
-# file_copier = FileCopier()
-# file_copier.copy_all_projects(tasks,projetos.ignore_list)
-# google = GoogleDriveHelper(config)
-
-# ==================== Copiar arquivos ====================
-# print(json.dumps(metadata, indent=2, ensure_ascii=False, default=str))
-# file_copier.copy_all_projects(tasks)
 
 # ==================== Mandar mensagem para o Slack arquivos ====================
-# slack_payload: dict = metadata[0]
-# slack_channel_id = slack_payload.get("game").get("slack_channel_id")
-# producers = ['andrei.sm@superplay.co', 'jonatan.m@superplay.co']
-# project_name = slack_payload.get("project_name")
-# project_link = Path(slack_payload.get("copy_paths")[1].stem)
-# video_path = slack_payload.get("video_to_preview")
+slack_payload: dict = job_manifest[0]
 
-# channel_id = slack_channel_id
-# producers = producers
-# project_name = project_name
-# project_link = google.get_mktout_folder_link(project_link)
-# video_path = video_path
+slack_channel_id = slack_payload.get("game").get("slack_channel_id")
+producers = ['andrei.sm@superplay.co', 'jonatan.m@superplay.co']
+project_name = slack_payload.get("project_name")
+video_path = slack_payload.get("video_to_preview")
+
+channel_id = slack_channel_id
+producers = producers
+project_name = project_name
+project_link = google.get_mktout_folder_link(project_name)
+video_path = video_path
+
+print(channel_id)
+print(producers)
+print(project_name)
+print(project_link)
+print(video_path)
 
 # slack.send_out_msg(channel_id,producers,project_name,project_link,video_path)
 
 # sequencia lógica 
 '''
 1. build_projects -> cria os projetos
-2. collect_copy_paths -> coleta os caminhos de copia
-3. get_full_metadata -> coleta os metadados dos projetos
-4. FileCopier -> instancia o FileCopier com a lista de ignorados
-5. copy_all_projects -> executa a copia dos arquivos conforme as tarefas coletadas
-6. Cria o payload para o Slack e envia a mensagem
-7. Atualiza status do Monday.com
-8. Envia log para o Google Sheet
+2. projeto.dispatch_out -> copia os arquivos
+3. Cria o payload para o Slack e envia a mensagem
+4. Atualiza status do Monday.com
+5. Envia log para o Google Sheet
 '''
 

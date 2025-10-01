@@ -45,6 +45,6 @@ class ProjectTypeIdentifier():
     def create_projects(self):
         if self._project_type == "Video":
             return SuperplayVideoProject(self._config, self.gdrive_local_path, self.local_path)
-
+        
         else:
             raise NotImplementedError(f"⚠️  Project type '{self._project_type}' is not implemented yet.")

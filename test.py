@@ -52,4 +52,20 @@ tasks = build_task(sanitize_file_name, content, out_paths)
 # file_copier = FileCopier()
 # file_copier.copy_variadic_groups(tasks)
 
-# print(json.dumps(tasks, indent=2, ensure_ascii=False, default=str))
+def pick_preview(src_folder: list[str | Path]) -> Path:
+    mp4_files = [Path(item) for item in src_folder if Path(item).is_file() and Path(item).suffix.lower() == ".mp4"]
+
+    if not mp4_files:
+        raise FileNotFoundError("Video to preview not found")
+
+    # prioridade por padrão do nome (stem)
+    for extension in ("_1080x1080", "_1920x1080"):
+        found = next((item for item in mp4_files if extension in item.stem.lower()), None)
+        if found:
+            return found
+
+    # fallback
+    return mp4_files[0]
+    
+
+print(pick_preview(content))

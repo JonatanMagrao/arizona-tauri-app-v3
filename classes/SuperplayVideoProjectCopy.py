@@ -19,24 +19,17 @@ class SuperplayVideoProject(SuperplayProject):
     def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path):
         super().__init__(config, gdrive_local_path, local_path)
         self.ignore_list: dict = self.project_types.get(self.project_type).get("ignore_list")
+        self.project_name = self._sanitize_project_name(self.project_title)
 
     @property
     def _has_only_folder(self) -> bool:
-        return all([content.is_dir() for content in self.content])
-
-    def _get_project_name(self, src_folder: list[Path]) -> str:
-        remove_resolution = re.compile(r"_\d{2,4}x\d{2,4}", flags=re.IGNORECASE)
-        for item in src_folder:
-            if item.is_file() and item.suffix.lower() == ".mp4":
-                return remove_resolution.sub("", item.stem)
-
-        raise Exception("Video to preview not found")
+        return all([content.is_dir() for content in self.content])    
 
     def _build_project(self, src_folder: Path) -> dict:
         project_content = [*src_folder.iterdir()]
         filtered_project_content = self._filter_solo_content(project_content)
         project_id = self.id
-        project_name = self._get_project_name(project_content)
+        project_name = self.project_name
         game = self.game_info.get(self.game_code)
         type_label = self.project_types.get(self.project_type).get("label")
         duration = self._duration(project_content)
@@ -61,7 +54,7 @@ class SuperplayVideoProject(SuperplayProject):
             "language": language_full_info,
             "content_to_copy": filtered_project_content,
             "video_to_preview": video_to_preview_path,
-            "copy_paths": build_task(self._sanitize_video_file_name, filtered_project_content, [mktout_folder_path,master_folder_path])
+            "copy_paths": build_task(self._sanitize_project_name, filtered_project_content, [mktout_folder_path,master_folder_path])
         }
 
         return project
@@ -84,11 +77,19 @@ class SuperplayVideoProject(SuperplayProject):
             return [self._build_project(self.gdrive_local_path)]
         
         
-    def _sanitize_video_file_name(self,file: Path) -> str:
-        remove_version = re.compile(r"_v\d{1,3}", flags=re.IGNORECASE)
-        final_file_path_name = remove_version.sub("", file.name)
+    def _sanitize_project_name(self,name_or_path: Path | str) -> str:
 
-        return final_file_path_name
+        if type(name_or_path) == Path:
+            remove_version = re.compile(r"_v\d{1,3}", flags=re.IGNORECASE)
+            final_file_path_name = remove_version.sub("", name_or_path.name)
+
+            return final_file_path_name
+        
+        if type(name_or_path) == str:
+            remove_version = re.compile(r"_v\d{1,3}", flags=re.IGNORECASE)
+            final_file_path_name = remove_version.sub("", name_or_path)
+
+            return final_file_path_name            
 
     def _duration(self, src_folder: list[Path]) -> Optional[str]:
         """
@@ -136,29 +137,29 @@ class SuperplayVideoProject(SuperplayProject):
         else:
             return self.find_path_anchor("Render") / "MASTER" / language.upper()
 
-    #! melhorar. está indo pelo for, mas precisa procurar primeiro por 1080x1080 ao invés de iterar
-    def _video_to_preview_path(self, src_folder: list):
-        for item in src_folder:
-            if item.is_file() and item.suffix.lower() == ".mp4":
-                if re.search(r"_1080x1080", item.stem, flags=re.IGNORECASE):
-                    return item
+    def _video_to_preview_path(self, src_folder: list[str | Path]) -> Path:
+        mp4_files = [Path(item) for item in src_folder if Path(item).is_file() and Path(item).suffix.lower() == ".mp4"]
 
-                if re.search(r"_1920x1080", item.stem, flags=re.IGNORECASE):
-                    return item
+        if not mp4_files:
+            raise FileNotFoundError("Video to preview not found")
 
-                return item
+        # prioridade por padrão do nome (stem)
+        for extension in ("_1080x1080", "_1920x1080"):
+            found = next((item for item in mp4_files if extension in item.stem.lower()), None)
+            if found:
+                return found
 
-        raise Exception("Video to preview not found")
+        # fallback
+        return mp4_files[0]
+        
 
     def _root_marketing_out_folder_path(self, language: str) -> Path:
 
         try:
             project_type = self.id.get("project_type")
             game_code = self.id.get("game_code").upper()
-            game_code_path = self.game_info.get(
-                game_code).get("mktout_folder_name")
-            type_folder_path = self.project_types.get(
-                project_type).get("folder_path")
+            game_code_path = self.game_info.get(game_code).get("mktout_folder_name")
+            type_folder_path = self.project_types.get(project_type).get("folder_path")
 
             if self.test:
                 return Path(self.test_path) / "Marketing OUT" / game_code_path / type_folder_path / language
