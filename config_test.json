@@ -1,0 +1,90 @@
+{
+    "shared_drive_labels": ["Shared drives", "Drives compartilhados"],
+    "company_email_domain": "@superplay.co", 
+    "google_endpoints": {
+        "data_endpoint": "https://script.google.com/macros/s/AKfycby8gizyZ1q6JccTJijV29CgRfWnWnMzbMzpiklu1KzOF_4QCuPfOPtuyHJ2AiadQ9G_wQ/exec",
+        "link_endpoint": "https://script.google.com/macros/s/AKfycbxHYtlVBwmY-E5u9D0MJvDk9fISkhGpKny851Odt7ljDa8Q2oj_evQRRS8OsLXWCe6UOw/exec",
+        "sheet_endpoint": "https://script.google.com/macros/s/AKfycbylkxY2oDyJV9wovLjdmJrsTi3gMISfTQGvrILdjnVBpyTB7fVncHSVzkU0YgnK4JGDSQ/exec"
+    },
+    "supported_languages": {
+        "ar": {"lang": "Arabic", "abbr": "ar"},
+        "zh": {"lang": "Chinese", "abbr": "zh"},
+        "nl": {"lang": "Dutch", "abbr": "nl"},
+        "en": {"lang": "English", "abbr": "en"},
+        "fr": {"lang": "French", "abbr": "fr"},
+        "fr-ca": {"lang": "French Canada", "abbr": "fr-ca"},
+        "de": {"lang": "German", "abbr": "de"},
+        "he": {"lang": "Hebrew", "abbr": "he"},
+        "hu": {"lang": "Hungarian", "abbr": "hu"},
+        "id": {"lang": "Indonesian", "abbr": "id"},
+        "it": {"lang": "Italian", "abbr": "it"},
+        "ja": {"lang": "Japanese", "abbr": "ja"},
+        "kr": {"lang": "Korean", "abbr": "kr"},
+        "ms": {"lang": "Malay", "abbr": "ms"},
+        "pl": {"lang": "Polish", "abbr": "pl"},
+        "pt": {"lang": "Portuguese", "abbr": "pt"},
+        "pt-br": {"lang": "Portuguese (Brazil)", "abbr": "pt-br"},
+        "ro": {"lang": "Romanian", "abbr": "ro"},
+        "ru": {"lang": "Russian", "abbr": "ru"},
+        "es": {"lang": "Spanish", "abbr": "es"},
+        "es-sp": {"lang": "Spanish (Spain)", "abbr": "es-sp"},
+        "es-la": {"lang": "Spanish (Latin American)", "abbr": "es-la"},
+        "es-mx": {"lang": "Spanish Mexico", "abbr": "es-mx"},
+        "th": {"lang": "Thai", "abbr": "th"},
+        "tr": {"lang": "Turkish", "abbr": "tr"},
+        "uk": {"lang": "Ukrainian", "abbr": "uk"}
+    },
+    "project_types": {
+        "P": {
+            "label": "Playable",
+            "folder_path": "06-Playables",
+            "ignore_list": {
+                "files_extensions": [],
+                "folder_names": []
+            }
+        },
+        "V": {
+            "label": "Video",
+            "folder_path": "07-Videos",
+            "ignore_list": {
+                "file_extensions": [".mov", ".avi", ".mkv", ".gif"],
+                "folder_names": ["Archive", "_Archive", "Thumbs", "EndCards"]
+            },
+            "producer_list": {
+                "DS": ["jonatan.m@superplay.co", "jonatan.m@superplay.co"],
+                "DD": ["jonatan.m@superplay.co", "jonatan.m@superplay.co"],
+                "DX": ["jonatan.m@superplay.co", "jonatan.m@superplay.co", "jonatan.m@superplay.co"]
+            }
+        },
+        "H": {
+            "label": "Hook",
+            "folder_path": "07-Videos"
+        },
+        "UGC": {
+            "label": "UGC",
+            "folder_path": "08-UGC"
+        },
+        "AIV": {
+            "label": "AIV",
+            "folder_path": "09-SettAI"
+        }
+    },
+    "games": {
+        "DS": {
+            "name": "Disney Solitaire",
+            "mktout_folder_name": "DS_DisneySolitaire_OUT",
+            "slack_channel_id": "C093YV2DSFK"
+        },
+        "DD": {
+            "name": "Dice Dreams",
+            "mktout_folder_name": "DD_DiceDreams_OUT",
+            "slack_channel_id": "C093YV2DSFK"
+        },
+        "DX": {
+            "name": "Domino Dreams",
+            "mktout_folder_name": "DX_DominoDreams_OUT",
+            "slack_channel_id": "C093YV2DSFK"
+        }
+    }
+
+}

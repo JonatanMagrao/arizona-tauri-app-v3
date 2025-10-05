@@ -1,8 +1,11 @@
-from classes.commons import (load_config_json, build_projects)
+from classes.commons import (
+    load_config_json, build_projects_from_links, copy_projects, notify_slack)
 from classes.services import EventTimer
 from classes.integrations import SlackSuperplay, GoogleDriveHelper
 from pathlib import Path
-import sys, json, os
+import sys
+import json
+import os
 # sys.tracebacklimit = 0
 
 # archive and versions
@@ -24,34 +27,25 @@ DD_AIV_202_002_EN = "https://drive.google.com/drive/folders/1XqoC7xW9ldoayOjh3Gd
 DX_H_124_001_NOLANG = "https://drive.google.com/drive/folders/18bVqnWDr7Q9pZUmAmqBUaYWSz4lhzmdc"
 
 # ==================== Carregar projetos ====================
-config = load_config_json("config.json")
+config = load_config_json("config_test.json")
 timer = EventTimer()
 slack = SlackSuperplay()
 google = GoogleDriveHelper(config)
 
-timer.start("Buiding Projects")
-projeto = build_projects(config, DS_V_013_001_JA)
-timer.end("Buiding Projects")
+projects_links = [
+    DS_V_042_001_EN,
+    DS_V_014_023_EN,
+    DS_V_013_001_JA,
+    DD_V_195_008_EN,
+    DD_V_195_009_EN,
+    DD_V_241_002_DE,
+    DS_V_018_041_LOC
+]
 
-timer.start("Job Manifest")
-job_manifest: list[dict] = projeto.job_manifest
-print(json.dumps(job_manifest, indent=2, ensure_ascii=False, default=str))
-timer.end("Job Manifest")
-
-timer.start("Dispatch Out")
-projeto.dispatch_out()
-timer.end("Dispatch Out")
-
-timer.start("Buinding Slack Payload")
-slack_payload = projeto.build_slack_payload()
-print(json.dumps(slack_payload, indent=2, ensure_ascii=False, default=str))
-timer.end("Buinding Slack Payload")
-
-# timer.start("Sending Slack message")
-# projeto.send_slack_message()
-# timer.end("Sending Slack message")
-
-timer.log()
+projetos = build_projects_from_links(config, projects_links)
+# todo gerar um criador de metadados através dos manifestos
+copy_projects(projetos)
+notify_slack(projetos)
 
 # sequencia lógica
 '''
