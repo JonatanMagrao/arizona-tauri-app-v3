@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Iterable
-from functions import find_file_in_tree_from
+from utils import find_file_in_tree_from
 from classes.SuperplayVideoProjectCopy import SuperplayVideoProject
 from classes.LocalPathHelper import LocalPathHelper
 

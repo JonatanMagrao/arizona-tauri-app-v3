@@ -1,5 +1,5 @@
 from classes.slack.SlackBase import SlackBase
-from functions import long_path
+from utils import long_path
 from pathlib import Path
 
 class SlackSuperplay(SlackBase):

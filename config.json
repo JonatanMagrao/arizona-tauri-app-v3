@@ -1,6 +1,4 @@
 {
-    "mktout_base_path": "G:\\Drives compartilhados\\Marketing OUT",
-    "test_path": "C:\\Users\\PC\\Downloads\\marketing_out_master_test",
     "shared_drive_labels": ["Shared drives", "Drives compartilhados"],
     "company_email_domain": "@superplay.co", 
     "google_endpoints": {

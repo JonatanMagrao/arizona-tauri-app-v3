@@ -1,24 +1,12 @@
-from project_discovery import (
-    build_projects
-)
+from project_discovery import build_projects
+from utils import load_config_json
 from classes.FileCopier import FileCopier
 from classes.slack.SlackSuperplay import SlackSuperplay
 from classes.GoogleDriveHelper import GoogleDriveHelper
 from classes.EventTimer import EventTimer
 from pathlib import Path
-import sys
-import json
+import sys, json, os
 # sys.tracebacklimit = 0
-
-def read_json_dict(path: str | Path) -> dict:
-    with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    if not isinstance(data, dict):
-        raise TypeError("O JSON não é um objeto (dict); conteúdo lido: "
-                        f"{type(data).__name__}")
-    return data
-
-
 
 DS_V_042_001_EN = "https://drive.google.com/open?id=1tgRQu6s6E3l3NroUGeACmu8q84R482ex&usp=drive_fs" # archive and versions
 DS_V_014_023_EN = "https://drive.google.com/open?id=168eU8anxBh3arp8Ds21jyrIjpH8Bl2v_&usp=drive_fs"
@@ -35,34 +23,34 @@ DD_AIV_202_002_EN = "https://drive.google.com/drive/folders/1XqoC7xW9ldoayOjh3Gd
 DX_H_124_001_NOLANG = "https://drive.google.com/drive/folders/18bVqnWDr7Q9pZUmAmqBUaYWSz4lhzmdc"
 
 # ==================== Carregar projetos ====================
-# config = read_json_dict("config.json")
-# timer = EventTimer()
-# slack = SlackSuperplay()
-# google = GoogleDriveHelper(config)
+config = load_config_json("config.json")
+timer = EventTimer()
+slack = SlackSuperplay()
+google = GoogleDriveHelper(config)
 
-# timer.start("build_projects")
-# projeto = build_projects(config, DS_V_014_025_LOC)
-# timer.end("build_projects")
+timer.start("build_projects")
+projeto = build_projects(config, DS_V_042_001_EN)
+timer.end("build_projects")
 
-# timer.start("job_manifest")
-# job_manifest: list[dict] = projeto.job_manifest
-# print(json.dumps(job_manifest, indent=2, ensure_ascii=False, default=str))
-# timer.end("job_manifest")
+timer.start("job_manifest")
+job_manifest: list[dict] = projeto.job_manifest
+print(json.dumps(job_manifest, indent=2, ensure_ascii=False, default=str))
+timer.end("job_manifest")
+
+# timer.start("dispatch_out")
+# projeto.dispatch_out()
+# timer.end("dispatch_out")
 
 # timer.start("build_slack_payload")
 # slack_payload = projeto.build_slack_payload()
 # print(json.dumps(slack_payload, indent=2, ensure_ascii=False, default=str))
 # timer.end("build_slack_payload")
 
-# timer.start("dispatch_out")
-# projeto.dispatch_out()
-# timer.end("dispatch_out")
-
 # timer.start("send_slack_message")
 # projeto.send_slack_message()
 # timer.end("send_slack_message")
 
-# timer.log()
+timer.log()
 
 
 # sequencia lógica

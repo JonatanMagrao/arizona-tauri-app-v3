@@ -9,7 +9,7 @@ import threading
 import time
 from typing import Iterable, Union, Optional, Sequence
 
-from functions import long_path
+from utils import long_path
 
 CopyTask = namedtuple("CopyTask", ["source", "destination"])
 PathLike = Union[str, Path]

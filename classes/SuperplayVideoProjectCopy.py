@@ -1,5 +1,5 @@
 from pathlib import Path
-from functions import normalize_old_project_name, build_task
+from utils import normalize_old_project_name, build_task
 from classes.SuperplayProject import SuperplayProject
 from classes.FileCopier import FileCopier
 import re, json

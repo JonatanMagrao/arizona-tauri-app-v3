@@ -1,4 +1,4 @@
-from functions import find_file_in_tree_from
+from utils import find_file_in_tree_from
 from classes.GoogleDriveHelper import GoogleDriveHelper
 from classes.slack.SlackSuperplay import SlackSuperplay
 import os, re
