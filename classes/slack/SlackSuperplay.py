@@ -40,8 +40,7 @@ class SlackSuperplay(SlackBase):
 
     def send_out_msg(self, slack_channel, producers, project_name, project_link, project_file):
         producers = self.mark_users(producers)
-        file_name = Path(project_file).name
-        out_msg = f"{producers}\n{project_name}\n{project_link}\n{file_name}"
+        out_msg = f"{producers}\n{project_name}\n{project_link}"
         self.send_file_to_channels([slack_channel], project_file, out_msg)
 
 

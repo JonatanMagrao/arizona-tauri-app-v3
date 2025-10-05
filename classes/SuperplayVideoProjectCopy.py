@@ -69,10 +69,11 @@ class SuperplayVideoProject(SuperplayProject):
         project = {
             "id": project_id,
             "project_name": project_name,
-            "game": game,
             "type_label": type_label,
+            "game": game,
             "duration": duration,
             "language": language_full_info,
+            "producers": self.producer_list,
             "content_to_copy": filtered_project_content,
             "video_to_preview": video_to_preview_path,
             "copy_paths": build_task(self._sanitize_video_file_name, filtered_project_content, [mktout_folder_path,master_folder_path])
@@ -249,7 +250,6 @@ class SuperplayVideoProject(SuperplayProject):
             task = job.get("copy_paths")
             file_copier.copy_variadic_groups(task)
 
-    @property
     def build_slack_payload(self):
         #! @property seria ideal apenas para recuperar dados sem risco de erro, quando dados já estão prontos e disponíveis e sem I/O. por conta do contents e project com o _build_project, seria interessante ou criar uma validação pra isso com try catch antes ou criar uma outra função auxiliar apenas para ajudar na construção disso. se der algum erro, nem chega aqui e avisa o usuário
         job_manifest = self.job_manifest
@@ -257,11 +257,11 @@ class SuperplayVideoProject(SuperplayProject):
         for job in job_manifest:
             
             slack_channel_id = job.get("game").get("slack_channel_id")
-            producers = ['andrei.sm@superplay.co', 'jonatan.m@superplay.co']
+            producers = self.producer_list
             project_name = job.get("project_name")
             project_link = self.google_util.get_mktout_folder_link(project_name)
             video_path = job.get("video_to_preview")
-
+            project_language = job.get("language")
 
             #! estudar forma para retornar caso dê erro. volta pro usuário? cancela toda a operação do slack? manda apenas os que foram processados? etc
             if len(project_link) < 1:
@@ -277,21 +277,40 @@ class SuperplayVideoProject(SuperplayProject):
                 "producers": producers,
                 "project_name": project_name,
                 "project_link": project_link[0],
-                "video_path": video_path
+                "video_path": video_path,
+                "project_language": project_language
             })
         
         return slack_payload
 
     def send_slack_message(self):
-        slack_payload: dict = self.build_slack_payload[0]
 
-        channel_id = slack_payload.get("channel_id")
-        producers = slack_payload.get("producers")
-        project_name = slack_payload.get("project_name")
-        project_link = slack_payload.get("project_link")
-        video_path = slack_payload.get("video_path")
+        #todo preciso implementar quando for combos também aqui
+        slack_payload = self.build_slack_payload()
+        
+        channel_id = slack_payload[0].get("channel_id")
+        producers = slack_payload[0].get("producers")
+        video_path = slack_payload[0].get("video_path")
+        project_name = slack_payload[0].get("project_name")
 
-        self.slack_util.send_out_msg(channel_id, producers, project_name, project_link, video_path)
+        if self._has_only_folder:
+
+            project_links = ""
+
+            for project in slack_payload:
+
+                project_language = project.get("project_language").get("abbr").upper()
+                project_links = project_links + f"{project_language} - {project.get('project_link')}\n"
+
+            self.slack_util.send_out_msg(channel_id, producers, project_name, project_links, video_path)
+                
+        
+        else:
+            
+            project_link = slack_payload[0].get("project_link")
+            video_path = slack_payload[0].get("video_path")
+
+            self.slack_util.send_out_msg(channel_id, producers, project_name, project_link, video_path)
 
 
 

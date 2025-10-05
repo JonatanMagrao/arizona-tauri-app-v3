@@ -119,6 +119,14 @@ class SlackBase:
       except SlackApiError:
           return None
       
+    def user_id_list_by_email(self,email_list: list) -> list:
+      user_id_list = []
+      for email in email_list:
+        user_id = self.get_user_id_by_email(email)
+        if user_id:
+          user_id_list.append(user_id)
+      return user_id_list
+      
     def send_message_to_channel(
         self,
         channel_id: str,
@@ -197,4 +205,7 @@ if __name__ == "__main__":
 
     # slack.send_message_to_channel("C093YV2DSFK", f"{slack.mark_users(['andrei.sm@superplay.co'])} teste")
     # ts = slack.send_dm_by_email("jonatan.m@superplay.co", f"{slack.mark_users(['andrei.sm@superplay.co','jonatan.m@superplay.co'])}\nteste")
+    # print(slack.mark_users(['andrei.sm@superplay.co','jonatan.m@superplay.co']))
+
+    # print(slack.user_id_list_by_email(['andrei.sm@superplay.co','jonatan.m@superplay.co']))
     print(slack.mark_users(['andrei.sm@superplay.co','jonatan.m@superplay.co']))

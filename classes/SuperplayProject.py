@@ -31,9 +31,14 @@ class SuperplayProject:
         self.content = [*self.gdrive_local_path.iterdir()]
         self._parse_project_id()
         self.mktout_base_path = config.get("mktout_base_path")
+        self._get_producer_ids()
 
         self.test_path = config.get("test_path")
         self.test = True
+
+    def _get_producer_ids(self):
+        producer_email_list = self.project_types.get(self.project_type).get("producer_list").get(self.game_code.upper())
+        self.producer_list = producer_email_list
 
     @property
     def game_name(self) -> Optional[str]:
