@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Optional
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
-from classes.slack.keyvault import KeyringEntry
+from classes.integrations.slack.keyvault import KeyringEntry
 
 class SlackBase:
 

@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Iterable
-from utils import find_file_in_tree_from
-from classes.SuperplayVideoProjectCopy import SuperplayVideoProject
-from classes.LocalPathHelper import LocalPathHelper
+from classes.commons import find_file_in_tree_from
+from classes.services.local_path_helper import LocalPathHelper
+from classes.core.superplay_video_project import SuperplayVideoProject
 
 
 class ProjectTypeIdentifier():

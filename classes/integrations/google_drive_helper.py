@@ -1,6 +1,6 @@
 import requests
 from urllib.parse import (urlencode, urlparse)
-from classes.LoggerManager import LoggerManager
+from classes.services import LoggerManager
 logger = LoggerManager.get_logger(__name__)
 
 

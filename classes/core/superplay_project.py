@@ -1,10 +1,8 @@
-from utils import find_file_in_tree_from
-from classes.GoogleDriveHelper import GoogleDriveHelper
-from classes.slack.SlackSuperplay import SlackSuperplay
-import os, re
+from classes.commons import find_file_in_tree_from
+from classes.integrations import GoogleDriveHelper, SlackSuperplay
 from pathlib import Path
-import re
 from typing import Optional
+import os, re
 
 FILE_NAME_SUB_NORMALIZER = [
     r"_v\d{1,3}",

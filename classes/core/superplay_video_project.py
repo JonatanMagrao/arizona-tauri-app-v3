@@ -1,7 +1,7 @@
 from pathlib import Path
-from utils import normalize_old_project_name, build_task
-from classes.SuperplayProject import SuperplayProject
-from classes.FileCopier import FileCopier
+from classes.commons import build_task, normalize_old_project_name
+from classes.core.superplay_project import SuperplayProject
+from classes.services import FileCopier
 import re, json
 from typing import Optional
 

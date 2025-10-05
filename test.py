@@ -1,7 +1,7 @@
 import re
 import json
 from pathlib import Path
-from classes.FileCopier import FileCopier
+from classes.services import FileCopier
 from typing import Callable
 
 ignore_list = {

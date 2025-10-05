@@ -1,5 +1,5 @@
-from classes.GoogleDriveHelper import GoogleDriveHelper
-from classes.ProjectTypeIdentifier import ProjectTypeIdentifier
+from classes.core import ProjectTypeIdentifier
+from classes.integrations.google_drive_helper import GoogleDriveHelper
 
 def build_projects(config, glink: str):
     try:
@@ -9,4 +9,3 @@ def build_projects(config, glink: str):
         return project_identifier.create_projects
     except Exception as e:
         raise e
-
