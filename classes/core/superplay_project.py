@@ -1,5 +1,6 @@
 from classes.commons import find_file_in_tree_from
 from classes.integrations import GoogleDriveHelper, SlackSuperplay
+from classes.core.exceptions import (IDError)
 from pathlib import Path
 from typing import Optional
 import os, re
@@ -68,7 +69,11 @@ class SuperplayProject:
         return remove_resolution.sub("", file.stem)
 
     def _parse_project_id(self) -> None:
-        parts = self.project_title.split("-")
+
+        if not re.match(r"[A-Z]{2}-[A-Z]{1,3}-\d{3,4}-\d{3,4}_",self.project_title):
+            raise IDError(f"Project ID incorrect or incomplete: {self.project_title}")
+
+        parts = self.project_title.split("-")       
         self.game_code = parts[0]
         self.project_type = parts[1]
         self.project_number = parts[2]

@@ -1,16 +1,16 @@
 from classes.core import ProjectTypeIdentifier
 from classes.integrations.google_drive_helper import GoogleDriveHelper
-from classes.commons import timer
+import traceback
 
 def build_projects(config, glink: str):
     try:
         google_helper = GoogleDriveHelper(config)
         google_data = google_helper.get_link_data(glink)
         project_identifier = ProjectTypeIdentifier(config, google_data)
-        return project_identifier.create_projects
+        projetos = project_identifier.create_projects
+        return projetos
     except Exception as e:
-        raise e
-    
+        raise e    
 
 def build_projects_from_links(config:dict,projects_links:list) -> list:
   projetos = []
@@ -20,6 +20,8 @@ def build_projects_from_links(config:dict,projects_links:list) -> list:
         projeto = build_projects(config, link)
         projetos.append(projeto)
       except Exception as e:
+        raise e
+        # traceback.print_exc()
         continue
 
   return projetos

@@ -5,30 +5,18 @@ from classes.services import FileCopier
 import re, json
 from typing import Optional
 
-LANGUAGE_PATTERN_LIST = [
-    r'_([A-Z]{2}(?:-[A-Z]{2})?)_\d{2,3}s',
-]
 
-IGNORE_LIST = [
-    "Archive",
-    "_Archive"
-]
-
-
-class SuperplayVideoProject(SuperplayProject):
+class SuperplayVideoHookProject(SuperplayProject):
     def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path):
         super().__init__(config, gdrive_local_path, local_path)
-        self.ignore_list: dict = self.project_types.get(self.project_type).get("ignore_list")
+        self.ignore_list: dict = self.project_types.get(self.project_type).get("ignore_list")   
 
-    @property
-    def _has_only_folder(self) -> bool:
-        return all([content.is_dir() for content in self.content])
-   
     def _get_project_name(self, src_folder: list[str]) -> str:
         path_list = [Path(item) for item in src_folder]
 
         cleanner_list = [
             re.compile(r"_\d{2,4}x\d{2,4}", flags=re.IGNORECASE), # remove resolution in the name
+            re.compile(r"_reference", flags=re.IGNORECASE), # remove reference in the name
             re.compile(r"_v\d{1,3}", flags=re.IGNORECASE), # remove version in the name
         ]
 
@@ -54,12 +42,10 @@ class SuperplayVideoProject(SuperplayProject):
         game = self.game_info.get(self.game_code)
         type_label = self.project_types.get(self.project_type).get("label")
         duration = self._duration(project_content)
-        language = self._language(project_name)
-        language_full_info = self.supported_languages.get(language.lower())
         video_to_preview_path = self._video_to_preview_path(project_content)
 
-        root_master_folder_path = self._root_master_folder_path(language)
-        root_mktout_folder_path = self._root_marketing_out_folder_path(language)
+        root_master_folder_path = self._root_master_folder_path()
+        root_mktout_folder_path = self._root_marketing_out_folder_path()
         mktout_game_folder_path = self._marketing_out_game_folder_path(root_mktout_folder_path)
 
         #todo aqui, fazer validação para quando for mais de um projeto para pegar os nomes dos arquivos certinho
@@ -72,7 +58,6 @@ class SuperplayVideoProject(SuperplayProject):
             "type_label": type_label,
             "game": game,
             "duration": duration,
-            "language": language_full_info,
             "producers": self.producer_list,
             "content_to_copy": filtered_project_content,
             "video_to_preview": video_to_preview_path,
@@ -84,20 +69,10 @@ class SuperplayVideoProject(SuperplayProject):
 
     @property
     def job_manifest(self):
-        #! @property seria ideal apenas para recuperar dados sem risco de erro, quando dados já estão prontos e disponíveis e sem I/O. por conta do contents e project com o _build_project, seria interessante ou criar uma validação pra isso com try catch antes ou criar uma outra função auxiliar apenas para ajudar na construção disso. se der algum erro, nem chega aqui e avisa o usuário
-        #! preciso adaptar para o novo formato. aqui ele tá passando o path da pasta, não dos arquivos. eu preciso dos arquivos para pegar o nome
-        if self._has_only_folder:
-            projetos = []
-            import json
-            for src_folder in self.content:
-                contents = [*Path(src_folder).iterdir()]
-                content_path = contents[0].parent
-                project = self._build_project(content_path)
-                projetos.append(project)
-            return projetos
-
-        else:
+        try:
             return [self._build_project(self.gdrive_local_path)]
+        except Exception as e:
+            raise e
         
         
     def _sanitize_video_file_name(self, file_path: Path) -> str:
@@ -119,15 +94,6 @@ class SuperplayVideoProject(SuperplayProject):
                     return duration.group(1)
         return None
 
-    def _language(self, project_name: str) -> str | None:
-        # Tenta os padrões em ordem de mais específico para mais genérico
-        #! implementar caso encontre um idioma mas não está cadastrado
-        for pattern in LANGUAGE_PATTERN_LIST:
-            match = re.search(pattern, project_name)
-            if match:
-                return match.group(1)
-
-        raise ValueError("Language not found in project name.")
 
     def _filter_solo_content(self,content:list[Path]) -> list[Path]:
         contents = []
@@ -146,11 +112,11 @@ class SuperplayVideoProject(SuperplayProject):
 
         return contents
     
-    def _root_master_folder_path(self, language: str) -> Path:
+    def _root_master_folder_path(self) -> Path:
         if self.test:
-            return Path(self.test_path) / "Render" / "MASTER" / language.upper()
+            return Path(self.test_path) / "Render" / "MASTER" 
         else:
-            return self.find_path_anchor("Render") / "MASTER" / language.upper()
+            return self.find_path_anchor("Render") / "MASTER" 
 
     def _video_to_preview_path(self, src_folder: list[str]) -> Path:
         # .mp4 exists?
@@ -173,7 +139,7 @@ class SuperplayVideoProject(SuperplayProject):
         # fallback: any .mp4 file
         return mp4_files[0]
 
-    def _root_marketing_out_folder_path(self, language: str) -> Path:
+    def _root_marketing_out_folder_path(self) -> Path:
 
         try:
             project_type = self.id.get("project_type")
@@ -182,9 +148,9 @@ class SuperplayVideoProject(SuperplayProject):
             type_folder_path = self.project_types.get(project_type).get("folder_path")
 
             if self.test:
-                return Path(self.test_path) / "Marketing OUT" / game_code_path / type_folder_path / language
+                return Path(self.test_path) / "Marketing OUT" / game_code_path / type_folder_path.replace("<GAME_CODE>",self.game_code) / "Hooks"
             else:
-                return Path(self.mktout_base_path) / game_code_path / type_folder_path / language
+                return Path(self.mktout_base_path) / game_code_path / type_folder_path.replace("<GAME_CODE>",self.game_code) / "Hooks"
 
         except Exception as e:
             raise e
@@ -259,7 +225,6 @@ class SuperplayVideoProject(SuperplayProject):
             project_name = job.get("project_name")
             project_link = self.google_util.get_mktout_folder_link(project_name)
             video_path = job.get("video_to_preview")
-            project_language = job.get("language")
 
             #! estudar forma para retornar caso dê erro. volta pro usuário? cancela toda a operação do slack? manda apenas os que foram processados? etc
             if len(project_link) < 1:
@@ -276,7 +241,6 @@ class SuperplayVideoProject(SuperplayProject):
                 "project_name": project_name,
                 "project_link": project_link[0],
                 "video_path": video_path,
-                "project_language": project_language
             })
         
         return slack_payload
@@ -289,26 +253,11 @@ class SuperplayVideoProject(SuperplayProject):
         channel_id = slack_payload[0].get("channel_id")
         producers = slack_payload[0].get("producers")
         video_path = slack_payload[0].get("video_path")
-        project_name = slack_payload[0].get("project_name")
+        project_name = slack_payload[0].get("project_name")            
+        project_link = slack_payload[0].get("project_link")
+        video_path = slack_payload[0].get("video_path")
 
-        if self._has_only_folder:
-
-            project_links = ""
-
-            for project in slack_payload:
-
-                project_language = project.get("project_language").get("abbr").upper()
-                project_links = project_links + f"{project_language} - {project.get('project_link')}\n"
-
-            self.slack_util.send_out_msg(channel_id, producers, project_name, project_links, video_path)
-                
-        
-        else:
-            
-            project_link = slack_payload[0].get("project_link")
-            video_path = slack_payload[0].get("video_path")
-
-            self.slack_util.send_out_msg(channel_id, producers, project_name, project_link, video_path)
+        self.slack_util.send_out_msg(channel_id, producers, project_name, project_link, video_path)
 
 
 

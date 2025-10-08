@@ -3,6 +3,7 @@ from typing import Iterable
 from classes.commons import find_file_in_tree_from
 from classes.services.local_path_helper import LocalPathHelper
 from classes.core.superplay_video_project import SuperplayVideoProject
+from classes.core.superplay_videohook_project import SuperplayVideoHookProject
 
 
 class ProjectTypeIdentifier():
@@ -43,8 +44,12 @@ class ProjectTypeIdentifier():
 
     @property
     def create_projects(self):
+
         if self._project_type == "Video":
-            return SuperplayVideoProject(self._config, self.gdrive_local_path, self.local_path)
+                return SuperplayVideoProject(self._config, self.gdrive_local_path, self.local_path)
+            
+        elif self._project_type == "Hook":
+            return SuperplayVideoHookProject(self._config, self.gdrive_local_path, self.local_path)
 
         else:
             raise NotImplementedError(f"⚠️  Project type '{self._project_type}' is not implemented yet.")
