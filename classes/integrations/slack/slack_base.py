@@ -3,27 +3,21 @@ from __future__ import annotations
 from typing import Optional
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
-from classes.integrations.slack.keyvault import KeyringEntry
+from classes.integrations.slack.slack_tokens import SlackTokens
+
 
 class SlackBase:
 
-    def __init__(
-        self,
-        *,
-        raise_on_invalid: bool = True,
-        vault_app: str = "OutApp",
-        vault_key: str = "slack_user_token",
-    ) -> None:
+    def __init__(self, config: dict) -> None:
         # pega o token direto do KeyVault
-        keyring_entry = KeyringEntry(vault_app, vault_key)
-        self.token = keyring_entry.get()
+        self.slack_config = SlackTokens(config)
+        self.token = self.slack_config.retrieve_token()["user_token"]
 
         self.client = WebClient(token=self.token)
         self._is_valid: Optional[bool] = None
 
-        if raise_on_invalid:
-            if not self.validate_token():
-                raise ValueError("Slack user token inválido (auth_test falhou).")
+        if not self.validate_token():
+            raise ValueError("Slack user token inválido (auth_test falhou).")
 
     def validate_token(self) -> bool:
         """Retorna True se o token for válido (auth_test OK)."""
@@ -35,49 +29,49 @@ class SlackBase:
         return bool(self._is_valid)
 
     def get_user_info_by_id(self, user_id: str) -> dict | None:
-            """
-            Retorna:
-            {
-                "user_id": <str>,
-                "name": <legacy username>,
-                "real_name": <str | None>,
-                "display_name": <str | None>,
-                "email": <str | None>,
-                "team": {"id": ..., "name": ..., "domain": ...} | {"id": ...} | None
-            }
-            Escopos: users:read, users:read.email (p/ email), team:read (p/ name/domain)
-            """
+        """
+        Retorna:
+        {
+            "user_id": <str>,
+            "name": <legacy username>,
+            "real_name": <str | None>,
+            "display_name": <str | None>,
+            "email": <str | None>,
+            "team": {"id": ..., "name": ..., "domain": ...} | {"id": ...} | None
+        }
+        Escopos: users:read, users:read.email (p/ email), team:read (p/ name/domain)
+        """
+        try:
+            resp = self.client.users_info(user=user_id)
+            user = resp.get("user", {}) or {}
+            profile = user.get("profile", {}) or {}
+
+            team_data = None
+            # Tenta obter informações completas do workspace do token
             try:
-                resp = self.client.users_info(user=user_id)
-                user = resp.get("user", {}) or {}
-                profile = user.get("profile", {}) or {}
-
-                team_data = None
-                # Tenta obter informações completas do workspace do token
-                try:
-                    t = self.client.team_info().get("team", {}) or {}
-                    if t:
-                        team_data = {
-                            "id": t.get("id"),
-                            "name": t.get("name"),
-                            "domain": t.get("domain"),
-                        }
-                except SlackApiError:
-                    # fallback mínimo usando possível team_id do objeto user
-                    tid = user.get("team_id")
-                    if tid:
-                        team_data = {"id": tid}
-
-                return {
-                    "user_id": user.get("id") or user_id,
-                    "name": user.get("name"),  # legacy username
-                    "real_name": profile.get("real_name"),
-                    "display_name": profile.get("display_name") or profile.get("display_name_normalized"),
-                    "email": profile.get("email"),
-                    "team": team_data,
-                }
+                t = self.client.team_info().get("team", {}) or {}
+                if t:
+                    team_data = {
+                        "id": t.get("id"),
+                        "name": t.get("name"),
+                        "domain": t.get("domain"),
+                    }
             except SlackApiError:
-                return None
+                # fallback mínimo usando possível team_id do objeto user
+                tid = user.get("team_id")
+                if tid:
+                    team_data = {"id": tid}
+
+            return {
+                "user_id": user.get("id") or user_id,
+                "name": user.get("name"),  # legacy username
+                "real_name": profile.get("real_name"),
+                "display_name": profile.get("display_name") or profile.get("display_name_normalized"),
+                "email": profile.get("email"),
+                "team": team_data,
+            }
+        except SlackApiError:
+            return None
 
     def get_user_name_by_id(
         self,
@@ -90,8 +84,10 @@ class SlackBase:
             resp = self.client.users_info(user=user_id)
             user = resp.get("user", {}) or {}
             profile = user.get("profile", {}) or {}
-            display = profile.get("display_name") or profile.get("display_name_normalized")
-            real = profile.get("real_name") or profile.get("real_name_normalized")
+            display = profile.get("display_name") or profile.get(
+                "display_name_normalized")
+            real = profile.get("real_name") or profile.get(
+                "real_name_normalized")
             if prefer_display_name and display:
                 return display
             return display or real or None
@@ -106,27 +102,27 @@ class SlackBase:
             return ch.get("name")
         except SlackApiError:
             return None
-        
+
     def get_user_id_by_email(self, email: str) -> Optional[str]:
-      """
-      Retorna o user_id a partir do e-mail.
-      Requer escopo: users:read.email (além de users:read).
-      """
-      try:
-          resp = self.client.users_lookupByEmail(email=email)
-          user = resp.get("user", {}) or {}
-          return user.get("id")
-      except SlackApiError:
-          return None
-      
-    def user_id_list_by_email(self,email_list: list) -> list:
-      user_id_list = []
-      for email in email_list:
-        user_id = self.get_user_id_by_email(email)
-        if user_id:
-          user_id_list.append(user_id)
-      return user_id_list
-      
+        """
+        Retorna o user_id a partir do e-mail.
+        Requer escopo: users:read.email (além de users:read).
+        """
+        try:
+            resp = self.client.users_lookupByEmail(email=email)
+            user = resp.get("user", {}) or {}
+            return user.get("id")
+        except SlackApiError:
+            return None
+
+    def user_id_list_by_email(self, email_list: list) -> list:
+        user_id_list = []
+        for email in email_list:
+            user_id = self.get_user_id_by_email(email)
+            if user_id:
+                user_id_list.append(user_id)
+        return user_id_list
+
     def send_message_to_channel(
         self,
         channel_id: str,
@@ -161,7 +157,8 @@ class SlackBase:
         """
         try:
             # 1) resolve user_id pelo e-mail
-            u = self.client.users_lookupByEmail(email=email).get("user", {}) or {}
+            u = self.client.users_lookupByEmail(
+                email=email).get("user", {}) or {}
             user_id = u.get("id")
             if not user_id:
                 return None
@@ -179,17 +176,29 @@ class SlackBase:
             return resp.get("ts")
         except SlackApiError:
             return None
-        
+
     def mark_users(self, user_email: list) -> str | None:
         if not user_email:
             return None
         return ' '.join(f"<@{self.get_user_id_by_email(user_id)}>" for user_id in user_email)
 
+
 # -------------------------
 # Uso rápido (exemplo)
 # -------------------------
 if __name__ == "__main__":
-    slack = SlackBase()
+    config = {
+        "slack_config": {
+            "SLACK_OAUTH_REDIRECT_URL": "https://script.google.com/macros/s/AKfycbxhopJPeY1Sl49yTRJPVSCI3liEZDejgF3wex63faSl4bgUgVN51rTrToL1ivl3iaqE/exec",
+            "SLACK_CLIENT_ID": "549770083351.9075626247603",
+            "BOT_SCOPES": "",
+            "USER_SCOPES": "users:read,users:read.email,chat:write,files:write,channels:history,groups:history,groups:read,channels:read,reactions:write",
+            "SLACK_TEAM_ID": "TG5NN2FAB",
+            "SERVICE": "com.superplay.slack.oauth.out-process",
+            "ACCOUNT": "user.data"
+        }
+    }
+    slack = SlackBase(config)
 
     # print("Token válido?", slack.validate_token())
     # print(slack.mark_users("andrei.sm@superplay.co"))
@@ -208,4 +217,5 @@ if __name__ == "__main__":
     # print(slack.mark_users(['andrei.sm@superplay.co','jonatan.m@superplay.co']))
 
     # print(slack.user_id_list_by_email(['andrei.sm@superplay.co','jonatan.m@superplay.co']))
-    print(slack.mark_users(['andrei.sm@superplay.co','jonatan.m@superplay.co']))
+    # print(slack.mark_users(
+    #     ['andrei.sm@superplay.co', 'jonatan.m@superplay.co']))

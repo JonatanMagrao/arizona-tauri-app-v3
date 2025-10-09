@@ -3,8 +3,8 @@ from classes.commons import long_path
 from pathlib import Path
 
 class SlackSuperplay(SlackBase):
-    def __init__(self, *, raise_on_invalid: bool = True) -> None:
-        super().__init__()
+    def __init__(self, config) -> None:
+        super().__init__(config)
 
     def send_file_to_channels(self, channel_ids: list[str], file_path: Path, msg_text: str = "") -> None:
         file_path = long_path(Path(file_path))

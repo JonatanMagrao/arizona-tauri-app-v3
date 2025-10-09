@@ -20,7 +20,7 @@ class SuperplayProject:
     def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path):
 
         self.google_util = GoogleDriveHelper(config)
-        self.slack_util = SlackSuperplay()
+        self.slack_util = SlackSuperplay(config)
         self.gdrive_local_path = gdrive_local_path
         self.local_path = local_path
         self.project_types: dict = config.get("project_types")

@@ -29,12 +29,13 @@ DD_AIV_202_002_EN = "https://drive.google.com/drive/folders/1XqoC7xW9ldoayOjh3Gd
 DX_H_124_001_NOLANG = "https://drive.google.com/drive/folders/18bVqnWDr7Q9pZUmAmqBUaYWSz4lhzmdc"
 DS_H_016_002_NOLANG = "https://drive.google.com/drive/folders/1q2I2T6kRiWbZ0NqQy1qPx-Y6mOAoA5VI"
 DS_H_014_001_EN = "https://drive.google.com/drive/folders/1-P4MWisuEDJAKbMXrt_pSSnzSULre19I" #! naming error
+TESTE = "https://drive.google.com/drive/folders/1mngFCnuFg-7pB9MHUoKpFfPArj6lLGxv"
 
 
 # ==================== Carregar projetos ====================
 config = load_config_json("config_test.json")
 timer = EventTimer()
-slack = SlackSuperplay()
+slack = SlackSuperplay(config)
 google = GoogleDriveHelper(config)
 
 projects_links = [
@@ -49,6 +50,7 @@ projects_links = [
     # DX_H_124_001_NOLANG
     # DS_H_016_002_NOLANG
     # DS_H_014_001_EN
+    TESTE
 ]
 
 projetos = build_projects_from_links(config, projects_links)

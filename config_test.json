@@ -7,11 +7,13 @@
         "sheet_endpoint": "https://script.google.com/macros/s/AKfycbylkxY2oDyJV9wovLjdmJrsTi3gMISfTQGvrILdjnVBpyTB7fVncHSVzkU0YgnK4JGDSQ/exec"
     },
     "slack_oauth_config":{
-        "slack_oauth_redirect_url":"https://script.google.com/macros/s/AKfycbxhopJPeY1Sl49yTRJPVSCI3liEZDejgF3wex63faSl4bgUgVN51rTrToL1ivl3iaqE/exec",
-        "slack_client_id":"549770083351.9075626247603",
-        "slack_team_id":"TG5NN2FAB",
-        "bot_scopes":"",
-        "user_scopes":"users:read,users:read.email,chat:write,files:write,channels:history,groups:history,groups:read,channels:read,reactions:write"
+        "SLACK_OAUTH_REDIRECT_URL": "https://script.google.com/macros/s/AKfycbxhopJPeY1Sl49yTRJPVSCI3liEZDejgF3wex63faSl4bgUgVN51rTrToL1ivl3iaqE/exec",
+        "SLACK_CLIENT_ID": "549770083351.9075626247603",
+        "BOT_SCOPES": "",
+        "USER_SCOPES": "users:read,users:read.email,chat:write,files:write,channels:history,groups:history,groups:read,channels:read,reactions:write",
+        "SLACK_TEAM_ID": "TG5NN2FAB",
+        "SERVICE": "com.superplay.slack.oauth.out-process",
+        "ACCOUNT": "user.data"
     },
     "supported_languages": {
         "ar": {"lang": "Arabic", "abbr": "ar"},
