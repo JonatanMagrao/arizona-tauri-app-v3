@@ -6,6 +6,13 @@
         "link_endpoint": "https://script.google.com/macros/s/AKfycbxHYtlVBwmY-E5u9D0MJvDk9fISkhGpKny851Odt7ljDa8Q2oj_evQRRS8OsLXWCe6UOw/exec",
         "sheet_endpoint": "https://script.google.com/macros/s/AKfycbylkxY2oDyJV9wovLjdmJrsTi3gMISfTQGvrILdjnVBpyTB7fVncHSVzkU0YgnK4JGDSQ/exec"
     },
+    "slack_oauth_config":{
+        "slack_oauth_redirect_url":"https://script.google.com/macros/s/AKfycbxhopJPeY1Sl49yTRJPVSCI3liEZDejgF3wex63faSl4bgUgVN51rTrToL1ivl3iaqE/exec",
+        "slack_client_id":"549770083351.9075626247603",
+        "slack_team_id":"TG5NN2FAB",
+        "bot_scopes":"",
+        "user_scopes":"users:read,users:read.email,chat:write,files:write,channels:history,groups:history,groups:read,channels:read,reactions:write"
+    },
     "supported_languages": {
         "ar": {"lang": "Arabic", "abbr": "ar"},
         "zh": {"lang": "Chinese", "abbr": "zh"},

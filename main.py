@@ -1,7 +1,8 @@
 from classes.commons import (
     load_config_json, build_projects_from_links, copy_projects, notify_slack)
 from classes.services import EventTimer
-from classes.integrations import SlackSuperplay, GoogleDriveHelper
+from classes.integrations.google_drive_helper import GoogleDriveHelper
+from classes.integrations.slack.slack_superplay import SlackSuperplay
 from pathlib import Path
 import sys
 import json

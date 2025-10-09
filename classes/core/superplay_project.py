@@ -1,5 +1,6 @@
 from classes.commons import find_file_in_tree_from
-from classes.integrations import GoogleDriveHelper, SlackSuperplay
+from classes.integrations.google_drive_helper import GoogleDriveHelper
+from classes.integrations.slack.slack_superplay import SlackSuperplay
 from classes.core.exceptions import (IDError)
 from pathlib import Path
 from typing import Optional
