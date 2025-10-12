@@ -76,6 +76,8 @@ class SuperplayVideoProject(SuperplayProject):
             "producers": self.producer_list,
             "content_to_copy": filtered_project_content,
             "video_to_preview": video_to_preview_path,
+            "mktout_folder_path":{"path":mktout_folder_path,"exists":mktout_folder_path.exists()},
+            "master_folder_path":{"path":master_folder_path,"exists":master_folder_path.exists()},
             "copy_paths": build_task(self._sanitize_video_file_name, filtered_project_content, [mktout_folder_path,master_folder_path])
         }
 

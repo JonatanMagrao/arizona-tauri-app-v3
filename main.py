@@ -41,10 +41,10 @@ google = GoogleDriveHelper(config)
 projects_links = [
     # DS_V_042_001_EN,
     # DS_V_014_023_EN,
-    # DS_V_013_001_JA,
+    DS_V_013_001_JA,
     # DD_V_195_008_EN,
     # DD_V_195_009_EN,
-    DD_V_241_002_DE,
+    # DD_V_241_002_DE,
     # DS_V_018_041_LOC
 
     # DX_H_124_001_NOLANG
