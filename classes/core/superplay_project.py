@@ -34,7 +34,7 @@ class SuperplayProject:
         self._get_producer_ids()
 
         self.test_path = config.get("test_path")
-        self.test = True
+        self.test = config.get("test_mode")
 
     def _get_producer_ids(self):
         producer_email_list = self.project_types.get(self.project_type).get("producer_list").get(self.game_code.upper())

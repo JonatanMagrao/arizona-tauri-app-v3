@@ -1,4 +1,5 @@
 {
+    "test_mode": true,
     "shared_drive_labels": ["Shared drives", "Drives compartilhados"],
     "company_email_domain": "@superplay.co", 
     "google_endpoints": {

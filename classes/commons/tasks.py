@@ -16,7 +16,7 @@ def build_task(sanitizer:Callable[[Path], str], contents: list[str], out_paths: 
             task = [content] # here is the source
 
             for out_path in out_paths:
-                task.append(out_path / f"{new_file_name}")
+                task.append(out_path / new_file_name)
 
             tasks.append(task)
 

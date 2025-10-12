@@ -184,7 +184,7 @@ class SuperplayVideoProject(SuperplayProject):
             if self.test:
                 return Path(self.test_path) / "Marketing OUT" / game_code_path / type_folder_path / language
             else:
-                return Path(self.mktout_base_path) / game_code_path / type_folder_path / language
+                return Path(self.local_path) / "Marketing OUT" / game_code_path / type_folder_path / language
 
         except Exception as e:
             raise e
