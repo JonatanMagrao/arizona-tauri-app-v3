@@ -41,7 +41,7 @@ google = GoogleDriveHelper(config)
 projects_links = [
     # DS_V_042_001_EN,
     # DS_V_014_023_EN,
-    DS_V_013_001_JA,
+    # DS_V_013_001_JA,
     # DD_V_195_008_EN,
     # DD_V_195_009_EN,
     # DD_V_241_002_DE,
@@ -50,7 +50,7 @@ projects_links = [
     # DX_H_124_001_NOLANG
     # DS_H_016_002_NOLANG
     # DS_H_014_001_EN
-    # TESTE
+    TESTE
 ]
 
 projetos = build_projects_from_links(config, projects_links)

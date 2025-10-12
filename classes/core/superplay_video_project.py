@@ -2,6 +2,7 @@ from pathlib import Path
 from classes.commons import build_task, normalize_old_project_name
 from classes.core.superplay_project import SuperplayProject
 from classes.services import FileCopier
+from classes.core.exceptions import MediaFileNotFoundError
 import re, json
 from typing import Optional
 
@@ -36,7 +37,9 @@ class SuperplayVideoProject(SuperplayProject):
             re.compile(r"\s*_\s*", flags=re.IGNORECASE), # remove extra spaces with the underscore
         ]
 
-        project_title = next(item.stem for item in path_list if item.is_file() and item.suffix.lower() == ".mp4")
+        project_title = next((item.stem for item in path_list if item.is_file() and item.suffix.lower() == ".mp4"), None)
+        if not project_title:
+            raise MediaFileNotFoundError(f".mp4 file not found on '{path_list[0].parent.name}' folder")
 
         for cleaner in cleanner_list:
             project_title = cleaner.sub("", project_title)
@@ -181,12 +184,16 @@ class SuperplayVideoProject(SuperplayProject):
             project_type = self.id.get("project_type")
             game_code = self.id.get("game_code").upper()
             game_code_path = self.game_info.get(game_code).get("mktout_folder_name")
-            type_folder_path = self.project_types.get(project_type).get("folder_path")
+            game_type_cfg = self.project_types.get(project_type)
+            shared_drive_name = game_type_cfg.get("shared_drive_name")
+            type_folder_relpath = game_type_cfg.get("folder_path")
 
             if self.test:
-                return Path(self.test_path) / "Marketing OUT" / game_code_path / type_folder_path / language
+                # return Path(self.test_path) / "Marketing OUT" / game_code_path / type_folder_path / language
+                return Path(self.test_path, shared_drive_name, game_code_path, *type_folder_relpath, language) 
             else:
-                return Path(self.local_path) / "Marketing OUT" / game_code_path / type_folder_path / language
+                # return Path(self.local_path) / "Marketing OUT" / game_code_path / type_folder_path / language
+                return Path(self.local_path, shared_drive_name, game_code_path, *type_folder_relpath, language) 
 
         except Exception as e:
             raise e

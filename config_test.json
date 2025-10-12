@@ -55,7 +55,8 @@
         },
         "V": {
             "label": "Video",
-            "folder_path": "07-Videos",
+            "folder_path": ["07-Videos"],
+            "shared_drive_name":"Marketing OUT",
             "ignore_list": {
                 "file_extensions": [".mov", ".avi", ".mkv", ".gif"],
                 "folder_names": ["Archive", "_Archive", "Thumbs", "EndCards"]
@@ -68,7 +69,8 @@
         },
         "H": {
             "label": "Hook",
-            "folder_path": "02-<GAME_CODE>-Assets",
+            "folder_path": ["02-<GAME_CODE>-Assets","Hooks"],
+            "shared_drive_name":"Marketing OUT",
             "ignore_list": {
                 "file_extensions": [".mov", ".avi", ".mkv", ".gif"],
                 "folder_names": ["Archive", "_Archive", "Thumbs", "EndCards"]
@@ -81,30 +83,27 @@
         },
         "UGC": {
             "label": "UGC",
-            "folder_path": "08-UGC"
+            "folder_path": ["08-UGC"]
         },
         "AIV": {
             "label": "AIV",
-            "folder_path": "09-SettAI"
+            "folder_path": ["09-SettAI"]
         }
     },
     "games": {
         "DS": {
             "name": "Disney Solitaire",
             "mktout_folder_name": "DS_DisneySolitaire_OUT",
-            "hook_folder_name":"02-DS-Assets",
             "slack_channel_id": "C093YV2DSFK"
         },
         "DD": {
             "name": "Dice Dreams",
             "mktout_folder_name": "DD_DiceDreams_OUT",
-            "hook_folder_name":"02-DD-Assets",
             "slack_channel_id": "C093YV2DSFK"
         },
         "DX": {
             "name": "Domino Dreams",
             "mktout_folder_name": "DX_DominoDreams_OUT",
-            "hook_folder_name":"02-DX-Assets",
             "slack_channel_id": "C093YV2DSFK"
         }
     }
