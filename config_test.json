@@ -1,5 +1,5 @@
 {   
-    "test_mode": false,
+    "test_mode": true,
     "shared_drive_labels": ["Shared drives", "Drives compartilhados"],
     "company_email_domain": "@superplay.co", 
     "google_endpoints": {
@@ -15,6 +15,10 @@
         "SLACK_TEAM_ID": "TG5NN2FAB",
         "SERVICE": "com.superplay.slack.oauth.out-process",
         "ACCOUNT": "user.data"
+    },
+    "monday_config":{
+        "MONDAY_REDIRECT_URL":"",
+        "MONDAY_TOKEN":"eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjUzMDQ0MjI5OCwiYWFpIjoxMSwidWlkIjo3NjIwNjU5OCwiaWFkIjoiMjAyNS0wNi0yNFQxNTo0OToyOC4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6Mzc2OTkzNiwicmduIjoidXNlMSJ9.xMZzATgp-DP8v91ultDEwIZhuqxDYWNMimH2Nb_7QEo"
     },
     "supported_languages": {
         "ar": {"lang": "Arabic", "abbr": "ar"},

@@ -3,7 +3,8 @@ from classes.commons import build_task, normalize_old_project_name
 from classes.core.superplay_project import SuperplayProject
 from classes.services import FileCopier
 from classes.core.exceptions import MediaFileNotFoundError
-import re, json
+import re
+import json
 from typing import Optional
 
 LANGUAGE_PATTERN_LIST = [
@@ -19,27 +20,33 @@ IGNORE_LIST = [
 class SuperplayVideoProject(SuperplayProject):
     def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path):
         super().__init__(config, gdrive_local_path, local_path)
-        self.ignore_list: dict = self.project_types.get(self.project_type).get("ignore_list")
+        self.ignore_list: dict = self.project_types.get(
+            self.project_type).get("ignore_list")
 
     @property
     def _has_only_folder(self) -> bool:
         return all([content.is_dir() for content in self.content])
-   
+
     def _get_project_name(self, src_folder: list[str]) -> str:
         path_list = [Path(item) for item in src_folder]
 
         cleanner_list = [
-            re.compile(r"_\d{2,4}x\d{2,4}", flags=re.IGNORECASE), # remove resolution in the name
-            re.compile(r"_v\d{1,3}", flags=re.IGNORECASE), # remove version in the name
+            # remove resolution in the name
+            re.compile(r"_\d{2,4}x\d{2,4}", flags=re.IGNORECASE),
+            # remove version in the name
+            re.compile(r"_v\d{1,3}", flags=re.IGNORECASE),
         ]
 
         sanitize_list = [
-            re.compile(r"\s*_\s*", flags=re.IGNORECASE), # remove extra spaces with the underscore
+            # remove extra spaces with the underscore
+            re.compile(r"\s*_\s*", flags=re.IGNORECASE),
         ]
 
-        project_title = next((item.stem for item in path_list if item.is_file() and item.suffix.lower() == ".mp4"), None)
+        project_title = next((item.stem for item in path_list if item.is_file(
+        ) and item.suffix.lower() == ".mp4"), None)
         if not project_title:
-            raise MediaFileNotFoundError(f".mp4 file not found on '{path_list[0].parent.name}' folder")
+            raise MediaFileNotFoundError(
+                f".mp4 file not found on '{path_list[0].parent.name}' folder")
 
         for cleaner in cleanner_list:
             project_title = cleaner.sub("", project_title)
@@ -62,12 +69,16 @@ class SuperplayVideoProject(SuperplayProject):
         video_to_preview_path = self._video_to_preview_path(project_content)
 
         root_master_folder_path = self._root_master_folder_path(language)
-        root_mktout_folder_path = self._root_marketing_out_folder_path(language)
-        mktout_game_folder_path = self._marketing_out_game_folder_path(root_mktout_folder_path)
+        root_mktout_folder_path = self._root_marketing_out_folder_path(
+            language)
+        mktout_game_folder_path = self._marketing_out_game_folder_path(
+            root_mktout_folder_path)
 
-        #todo aqui, fazer validação para quando for mais de um projeto para pegar os nomes dos arquivos certinho
-        mktout_folder_path = self._marketing_out_folder_path(mktout_game_folder_path, project_name)
-        master_folder_path = self._master_folder_path(root_master_folder_path, project_name)
+        # todo aqui, fazer validação para quando for mais de um projeto para pegar os nomes dos arquivos certinho
+        mktout_folder_path = self._marketing_out_folder_path(
+            mktout_game_folder_path, project_name)
+        master_folder_path = self._master_folder_path(
+            root_master_folder_path, project_name)
 
         project = {
             "id": project_id,
@@ -79,13 +90,12 @@ class SuperplayVideoProject(SuperplayProject):
             "producers": self.producer_list,
             "content_to_copy": filtered_project_content,
             "video_to_preview": video_to_preview_path,
-            "mktout_folder_path":{"path":mktout_folder_path,"exists":mktout_folder_path.exists()},
-            "master_folder_path":{"path":master_folder_path,"exists":master_folder_path.exists()},
-            "copy_paths": build_task(self._sanitize_video_file_name, filtered_project_content, [mktout_folder_path,master_folder_path])
+            "mktout_folder_path": {"path": mktout_folder_path, "exists": mktout_folder_path.exists()},
+            "master_folder_path": {"path": master_folder_path, "exists": master_folder_path.exists()},
+            "copy_paths": build_task(self._sanitize_video_file_name, filtered_project_content, [mktout_folder_path, master_folder_path])
         }
 
         return project
-    
 
     @property
     def job_manifest(self):
@@ -103,8 +113,7 @@ class SuperplayVideoProject(SuperplayProject):
 
         else:
             return [self._build_project(self.gdrive_local_path)]
-        
-        
+
     def _sanitize_video_file_name(self, file_path: Path) -> str:
         remove_version = re.compile(r"_v\d{1,3}", flags=re.IGNORECASE)
         final_file_path_name = remove_version.sub("", file_path.name)
@@ -134,9 +143,10 @@ class SuperplayVideoProject(SuperplayProject):
 
         raise ValueError("Language not found in project name.")
 
-    def _filter_solo_content(self,content:list[Path]) -> list[Path]:
+    def _filter_solo_content(self, content: list[Path]) -> list[Path]:
         contents = []
-        ignore_file_extensions: list[str] = self.ignore_list.get("file_extensions")
+        ignore_file_extensions: list[str] = self.ignore_list.get(
+            "file_extensions")
         ignore_folder_names: list[str] = self.ignore_list.get("folder_names")
 
         ignore_exts = {ext.lower().strip() for ext in ignore_file_extensions}
@@ -150,7 +160,7 @@ class SuperplayVideoProject(SuperplayProject):
                 contents.append(item)
 
         return contents
-    
+
     def _root_master_folder_path(self, language: str) -> Path:
         if self.test:
             return Path(self.test_path) / "Render" / "MASTER" / language.upper()
@@ -163,7 +173,8 @@ class SuperplayVideoProject(SuperplayProject):
             raise FileNotFoundError("Video to preview not found")
 
         # working only with .mp4 and Path
-        mp4_files = [Path(item) for item in src_folder if Path(item).is_file() and Path(item).suffix.lower() == ".mp4"]
+        mp4_files = [Path(item) for item in src_folder if Path(
+            item).is_file() and Path(item).suffix.lower() == ".mp4"]
 
         # 1º stop: 1080x1080
         for item in mp4_files:
@@ -183,23 +194,25 @@ class SuperplayVideoProject(SuperplayProject):
         try:
             project_type = self.id.get("project_type")
             game_code = self.id.get("game_code").upper()
-            game_code_path = self.game_info.get(game_code).get("mktout_folder_name")
+            game_code_path = self.game_info.get(
+                game_code).get("mktout_folder_name")
             game_type_cfg = self.project_types.get(project_type)
             shared_drive_name = game_type_cfg.get("shared_drive_name")
             type_folder_relpath = game_type_cfg.get("folder_path")
 
             if self.test:
                 # return Path(self.test_path) / "Marketing OUT" / game_code_path / type_folder_path / language
-                return Path(self.test_path, shared_drive_name, game_code_path, *type_folder_relpath, language) 
+                return Path(self.test_path, shared_drive_name, game_code_path, *type_folder_relpath, language)
             else:
                 # return Path(self.local_path) / "Marketing OUT" / game_code_path / type_folder_path / language
-                return Path(self.local_path, shared_drive_name, game_code_path, *type_folder_relpath, language) 
+                return Path(self.local_path, shared_drive_name, game_code_path, *type_folder_relpath, language)
 
         except Exception as e:
             raise e
 
     def _master_folder_path(self, root_master_folder_path: Path, project_name) -> Path:
-        sanitized_project_name = re.sub(r"_v\d{1,3}", "", project_name, flags= re.IGNORECASE)
+        sanitized_project_name = re.sub(
+            r"_v\d{1,3}", "", project_name, flags=re.IGNORECASE)
 
         if not root_master_folder_path.exists():
             return root_master_folder_path / sanitized_project_name
@@ -233,7 +246,8 @@ class SuperplayVideoProject(SuperplayProject):
         return root_marketing_out_folder_path / normalize_old_project_name(self.game_name)
 
     def _marketing_out_folder_path(self, marketing_out_game_folder_path: Path, project_name: str) -> Path:
-        sanitized_project_name = re.sub(r"_v\d{1,3}", "", project_name, flags=re.IGNORECASE)
+        sanitized_project_name = re.sub(
+            r"_v\d{1,3}", "", project_name, flags=re.IGNORECASE)
 
         if not marketing_out_game_folder_path.exists():
             return marketing_out_game_folder_path / sanitized_project_name
@@ -245,83 +259,157 @@ class SuperplayVideoProject(SuperplayProject):
         for folder_path in sorted(marketing_out_game_folder_path.iterdir()):
             if re.match(f"{self.game_code}-{self.project_type}-{self.project_number}-{self.iteration_number}_", folder_path.stem, flags=re.IGNORECASE):
                 return folder_path
-            
+
         return marketing_out_game_folder_path / sanitized_project_name
-    
+
     def dispatch_out(self):
         #! está funcionando apenas com projeto solo, não com localized ou combo
         job_manifest: dict = self.job_manifest
         file_copier = FileCopier()
 
-        for job in job_manifest:            
+        for job in job_manifest:
             task = job.get("copy_paths")
             file_copier.copy_variadic_groups(task)
 
     def build_slack_payload(self):
-        #! @property seria ideal apenas para recuperar dados sem risco de erro, quando dados já estão prontos e disponíveis e sem I/O. por conta do contents e project com o _build_project, seria interessante ou criar uma validação pra isso com try catch antes ou criar uma outra função auxiliar apenas para ajudar na construção disso. se der algum erro, nem chega aqui e avisa o usuário
         job_manifest = self.job_manifest
         slack_payload = []
+
         for job in job_manifest:
-            
-            slack_channel_id = job.get("game").get("slack_channel_id")
+            slack_channel_id = (job.get("game") or {}).get("slack_channel_id")
             producers = self.producer_list
             project_name = job.get("project_name")
-            project_link = self.google_util.get_mktout_folder_link(project_name)
             video_path = job.get("video_to_preview")
-            project_language = job.get("language")
+            project_language = job.get("language") or {}
 
-            #! estudar forma para retornar caso dê erro. volta pro usuário? cancela toda a operação do slack? manda apenas os que foram processados? etc
-            if len(project_link) < 1:
-                print(f"Project link not found for: {project_name}")
-                continue
+            links = self.google_util.get_mktout_folder_link(project_name)
 
-            if len(project_link) > 2:
-                print(f"More than one project link found for: {project_name}")
-                continue
-
-            slack_payload.append({
+            meta = {
                 "channel_id": slack_channel_id,
                 "producers": producers,
                 "project_name": project_name,
-                "project_link": project_link[0],
                 "video_path": video_path,
-                "project_language": project_language
-            })
-        
+                "project_language": (project_language.get("abbr") or "").upper(),
+                "project_link": None,
+                "error": None,
+            }
+
+            if not links:
+                meta["error"] = f"Project link not found for: {project_name}"
+            elif len(links) > 1:
+                # se preferir aceitar o primeiro, troque para: meta["project_link"] = links[0]
+                meta["error"] = f"More than one project link found for: {project_name}"
+                meta["project_link"] = list(links)  # ajuda a debugar
+            else:
+                meta["project_link"] = links[0]
+
+            slack_payload.append(meta)
+
         return slack_payload
 
+
     def send_slack_message(self):
-
-        #todo preciso implementar quando for combos também aqui
         slack_payload = self.build_slack_payload()
-        
-        channel_id = slack_payload[0].get("channel_id")
-        producers = slack_payload[0].get("producers")
-        video_path = slack_payload[0].get("video_path")
-        project_name = slack_payload[0].get("project_name")
 
+        # Nome do canal (se todos forem no mesmo canal, tanto faz pegar o primeiro válido)
+        channel_name = None
+        for item in slack_payload:
+            if item["channel_id"]:
+                channel_name = self.slack_util.get_channel_name_by_id(item["channel_id"])
+                break
+
+        response = {
+            "status": "success",
+            "channel_name": channel_name,
+            "sent_count": 0,
+            "skipped_count": 0,
+            "errors": [],   # lista de {"project_name":..., "msg":...}
+            "projects": [], # feedback por item enviado
+        }
+
+        # Caso 1: mensagem “combo” (apenas pastas) — agrega só itens válidos
         if self._has_only_folder:
+            valid_items = [p for p in slack_payload if not p["error"] and p["project_link"]]
+            if not valid_items:
+                # nada válido -> retorna erro consolidado
+                response["status"] = "error"
+                response["errors"] = [
+                    {"project_name": p["project_name"], "msg": p["error"] or "invalid payload"}
+                    for p in slack_payload
+                ]
+                return response
 
-            project_links = ""
+            # Usa canal/produtores do primeiro válido
+            first = valid_items[0]
+            channel_id = first["channel_id"]
+            producers = first["producers"]
+            project_name = first["project_name"]
+            video_path = first["video_path"]
 
-            for project in slack_payload:
+            # Monta lista de links por idioma
+            lines = []
+            for p in valid_items:
+                lang = p["project_language"] or "UNK"
+                lines.append(f"{lang} - {p['project_link']}")
+                response["projects"].append({
+                    "project_name": p["project_name"],
+                    "project_link": p["project_link"],
+                    "language": p["project_language"],
+                })
 
-                project_language = project.get("project_language").get("abbr").upper()
-                project_links = project_links + f"{project_language} - {project.get('project_link')}\n"
+            # Envia mensagem única agregada
+            self.slack_util.send_out_msg(
+                channel_id,
+                producers,
+                project_name,
+                "\n".join(lines),
+                video_path
+            )
 
-            self.slack_util.send_out_msg(channel_id, producers, project_name, project_links, video_path)
-                
-        
-        else:
-            
-            project_link = slack_payload[0].get("project_link")
-            video_path = slack_payload[0].get("video_path")
+            response["sent_count"] = 1
+            response["skipped_count"] = len(slack_payload) - len(valid_items)
+            # coleta erros dos inválidos (se houver)
+            response["errors"] = [
+                {"project_name": p["project_name"], "msg": p["error"]}
+                for p in slack_payload if p["error"]
+            ]
+            return response
 
-            self.slack_util.send_out_msg(channel_id, producers, project_name, project_link, video_path)
+        # Caso 2: mensagem por item — envia um Slack por item válido
+        for p in slack_payload:
+            if p["error"] or not p["project_link"]:
+                response["skipped_count"] += 1
+                if p["error"]:
+                    response["errors"].append({"project_name": p["project_name"], "msg": p["error"]})
+                continue
 
+            channel_id = p["channel_id"]
+            producers = p["producers"]
+            project_name = p["project_name"]
+            project_link = p["project_link"]
+            video_path = p["video_path"]
+
+            self.slack_util.send_out_msg(
+                channel_id,
+                producers,
+                project_name,
+                project_link,
+                video_path
+            )
+
+            response["sent_count"] += 1
+            response["projects"].append({
+                "project_name": project_name,
+                "project_link": project_link,
+                "language": p["project_language"],
+            })
+
+        if response["sent_count"] == 0:
+            response["status"] = "error"
+
+        return response
 
 
     @property
     def remove_from_out(self):
         print("Implement")
-

@@ -2,6 +2,8 @@ finalizar o módulo do vídeo e testar com alguns projetos em ambiente controlad
 incluir o remover do out na classe do vídeo
 melhorar as configurações (json, google sheets. encontrar melhor maneira)
 
+preciso fazer os mesmos ajustes no build_slack_payload e do send_slack_message do superplay_video_project no superplay_videohook_project
+
 começar a testar com hooks e ugcs
 
 criando o suporte para hooks

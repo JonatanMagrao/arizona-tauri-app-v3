@@ -1,8 +1,9 @@
 from classes.commons import (
-    load_config_json, build_projects_from_links, copy_projects, notify_slack)
+    load_config_json, build_projects_from_links, copy_projects, notify_slack,project_metadata)
 from classes.services import EventTimer
 from classes.integrations.google_drive_helper import GoogleDriveHelper
 from classes.integrations.slack.slack_superplay import SlackSuperplay
+from classes.integrations.monday.monday_client import MondayClient
 from pathlib import Path
 import sys
 import json
@@ -37,6 +38,7 @@ config = load_config_json("config_test.json")
 timer = EventTimer()
 slack = SlackSuperplay(config)
 google = GoogleDriveHelper(config)
+monday = MondayClient(config)
 
 projects_links = [
     # DS_V_042_001_EN,
@@ -45,19 +47,27 @@ projects_links = [
     # DD_V_195_008_EN,
     # DD_V_195_009_EN,
     # DD_V_241_002_DE,
-    # DS_V_018_041_LOC
+    DS_V_018_041_LOC,
 
     # DX_H_124_001_NOLANG
     # DS_H_016_002_NOLANG
     # DS_H_014_001_EN
-    TESTE
+    # TESTE
+    "https://superplay.monday.com/boards/5239196091/views/115751609/pulses/18113029198/posts/4562215920",
+    "https://superplay.monday.com/boards/5239196091/pulses/18142354137/posts/4566450446",
+    "https://superplay.monday.com/boards/5239196091/pulses/18147479438/posts/4566449384",
 ]
 
+
 projetos = build_projects_from_links(config, projects_links)
+metadata = project_metadata(projetos)
+print(json.dumps(metadata, ensure_ascii=False, indent=2, default=str))
+
 # todo gerar um criador de metadados através dos manifestos
-print(json.dumps(projetos[0].job_manifest, indent=2, ensure_ascii=False, default=str))
+
 # copy_projects(projetos)
-# notify_slack(projetos)
+# slack_metadata = notify_slack(projetos)
+# print(json.dumps(slack_metadata, ensure_ascii=False, indent=2, default=str))
 
 # sequencia lógica
 '''
@@ -67,3 +77,4 @@ print(json.dumps(projetos[0].job_manifest, indent=2, ensure_ascii=False, default
 7. Atualiza status do Monday.com
 8. Envia log para o Google Sheet
 '''
+
