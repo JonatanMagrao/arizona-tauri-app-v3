@@ -1,5 +1,5 @@
 from classes.commons import (
-    load_config_json, build_projects_from_links, copy_projects, notify_slack,project_metadata)
+    load_config_json, build_projects_from_links, copy_projects, notify_slack, generate_project_metadata)
 from classes.services import EventTimer
 from classes.integrations.google_drive_helper import GoogleDriveHelper
 from classes.integrations.slack.slack_superplay import SlackSuperplay
@@ -49,10 +49,10 @@ projects_links = [
     # DD_V_241_002_DE,
     DS_V_018_041_LOC,
 
-    # DX_H_124_001_NOLANG
-    # DS_H_016_002_NOLANG
-    # DS_H_014_001_EN
-    # TESTE
+    DX_H_124_001_NOLANG,
+    DS_H_016_002_NOLANG,
+    DS_H_014_001_EN,
+    # TESTE,
     "https://superplay.monday.com/boards/5239196091/views/115751609/pulses/18113029198/posts/4562215920",
     "https://superplay.monday.com/boards/5239196091/pulses/18142354137/posts/4566450446",
     "https://superplay.monday.com/boards/5239196091/pulses/18147479438/posts/4566449384",
@@ -60,21 +60,23 @@ projects_links = [
 
 
 projetos = build_projects_from_links(config, projects_links)
-metadata = project_metadata(projetos)
-print(json.dumps(metadata, ensure_ascii=False, indent=2, default=str))
 
-# todo gerar um criador de metadados através dos manifestos
+project_metadata = generate_project_metadata(projetos)
+print(json.dumps(project_metadata, ensure_ascii=False, indent=2, default=str))
 
-# copy_projects(projetos)
-# slack_metadata = notify_slack(projetos)
-# print(json.dumps(slack_metadata, ensure_ascii=False, indent=2, default=str))
+copy_metadata = copy_projects(projetos)
+print(json.dumps(copy_metadata, ensure_ascii=False, indent=2, default=str))
+
+slack_metadata = notify_slack(projetos)
+print(json.dumps(slack_metadata, ensure_ascii=False, indent=2, default=str))
 
 # sequencia lógica
 '''
 1. build_projects -> cria os projetos
 2. projeto.dispatch_out() -> Copia os arquivos e pastas para as outras pastas
 3. projeto.send_slack_message() -> envia o log do projeto para o slack
-7. Atualiza status do Monday.com
-8. Envia log para o Google Sheet
+4. Miro (ou equivalente no google spreadsheet ou app proprietário)
+5. Atualiza status do Monday.com
+6. Envia log para o Google Sheet
 '''
 

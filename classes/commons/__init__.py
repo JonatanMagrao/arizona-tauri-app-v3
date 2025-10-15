@@ -3,7 +3,7 @@ from classes.commons.tasks import build_task
 from classes.commons.naming import normalize_old_project_name
 from classes.commons.files import long_path, find_file_in_tree_from
 from classes.commons.project import (
-    build_projects, build_projects_from_links, copy_projects, notify_slack, project_metadata)
+    build_projects, build_projects_from_links, copy_projects, notify_slack, generate_project_metadata)
 
 __all__ = [
     "load_config_json",
@@ -15,5 +15,5 @@ __all__ = [
     "build_projects_from_links",
     "copy_projects",
     "notify_slack",
-    "project_metadata"
+    "generate_project_metadata"
 ]

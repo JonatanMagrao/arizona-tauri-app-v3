@@ -56,6 +56,7 @@ class SuperplayVideoHookProject(SuperplayProject):
         master_folder_path = self._master_folder_path(root_master_folder_path, project_name)
 
         project = {
+            "status":"success",
             "id": project_id,
             "project_name": project_name,
             "type_label": type_label,
@@ -219,55 +220,112 @@ class SuperplayVideoHookProject(SuperplayProject):
         #! está funcionando apenas com projeto solo, não com localized ou combo
         job_manifest: dict = self.job_manifest
         file_copier = FileCopier()
+        metadata = []
 
-        for job in job_manifest:            
+        for job in job_manifest:
+            
             task = job.get("copy_paths")
             file_copier.copy_variadic_groups(task)
 
-    def build_slack_payload(self):
-        #! @property seria ideal apenas para recuperar dados sem risco de erro, quando dados já estão prontos e disponíveis e sem I/O. por conta do contents e project com o _build_project, seria interessante ou criar uma validação pra isso com try catch antes ou criar uma outra função auxiliar apenas para ajudar na construção disso. se der algum erro, nem chega aqui e avisa o usuário
-        job_manifest = self.job_manifest
-        slack_payload = []
-        for job in job_manifest:
-            
-            slack_channel_id = job.get("game").get("slack_channel_id")
-            producers = self.producer_list
-            project_name = job.get("project_name")
-            project_link = self.google_util.get_mktout_folder_link(project_name)
-            video_path = job.get("video_to_preview")
-
-            #! estudar forma para retornar caso dê erro. volta pro usuário? cancela toda a operação do slack? manda apenas os que foram processados? etc
-            if len(project_link) < 1:
-                print(f"Project link not found for: {project_name}")
-                continue
-
-            if len(project_link) > 2:
-                print(f"More than one project link found for: {project_name}")
-                continue
-
-            slack_payload.append({
-                "channel_id": slack_channel_id,
-                "producers": producers,
-                "project_name": project_name,
-                "project_link": project_link[0],
-                "video_path": video_path,
+            metadata.append({
+                "project_name": job["project_name"],
+                "copy_source_folder": str(Path(job["content_to_copy"][0]).parent),
+                "mktout_folder_path": job["mktout_folder_path"]["path"],
+                "master_folder_path": job["master_folder_path"]["path"],
+                "content_to_copy": [Path(item).name for item in job["content_to_copy"]],
             })
         
+        return metadata
+
+    def build_slack_payload(self):
+        # Monta o payload com possível campo de erro (sem language)
+        job_manifest = self.job_manifest
+        slack_payload = []
+
+        for job in job_manifest:
+            project_name = job.get("project_name")
+            links = self.google_util.get_mktout_folder_link(project_name) or []
+
+            item = {
+                "channel_id": ((job.get("game") or {}).get("slack_channel_id")),
+                "producers": self.producer_list,
+                "project_name": project_name,
+                "video_path": job.get("video_to_preview"),
+                "project_link": None,
+                "error": None,
+            }
+
+            if not links:
+                item["error"] = f"Project link not found for: {project_name}"
+            elif len(links) > 1:
+                item["error"] = f"More than one project link found for: {project_name}"
+            else:
+                item["project_link"] = links[0]
+
+            slack_payload.append(item)
+
         return slack_payload
 
+
     def send_slack_message(self):
+        payload = self.build_slack_payload()
 
-        #todo preciso implementar quando for combos também aqui
-        slack_payload = self.build_slack_payload()
-        
-        channel_id = slack_payload[0].get("channel_id")
-        producers = slack_payload[0].get("producers")
-        video_path = slack_payload[0].get("video_path")
-        project_name = slack_payload[0].get("project_name")            
-        project_link = slack_payload[0].get("project_link")
-        video_path = slack_payload[0].get("video_path")
+        # nome do canal (pega do primeiro que tiver id)
+        channel_name = None
+        for p in payload:
+            if p.get("channel_id"):
+                channel_name = self.slack_util.get_channel_name_by_id(p["channel_id"])
+                break
 
-        self.slack_util.send_out_msg(channel_id, producers, project_name, project_link, video_path)
+        errors = []
+
+        if self._has_only_folder:
+            # Quando é apenas pasta, manda 1 mensagem com várias linhas (sem language)
+            valid = [p for p in payload if p.get("project_link") and not p.get("error")]
+            if not valid:
+                errors = [{"project": p["project_name"], "msg": p["error"] or "invalid"} for p in payload]
+                return {
+                    "status": "error",
+                    "project_name": self.project_title,
+                    "producers": self.producer_list,
+                    "channel_name": channel_name,
+                    "errors": errors,
+                }
+
+            base = valid[0]
+            lines = [p["project_link"] for p in valid]  # sem language
+            self.slack_util.send_out_msg(
+                base["channel_id"],
+                base["producers"],
+                base["project_name"],
+                "\n".join(lines),
+                base["video_path"],
+            )
+
+        else:
+            # Caso normal: 1 mensagem por item válido
+            for p in payload:
+                if p.get("error") or not p.get("project_link"):
+                    if p.get("error"):
+                        errors.append({"project": p["project_name"], "msg": p["error"]})
+                    continue
+
+                self.slack_util.send_out_msg(
+                    p["channel_id"],
+                    p["producers"],
+                    p["project_name"],
+                    p["project_link"],
+                    p["video_path"],
+                )
+
+        return {
+            "status": "success" if not errors else "partial",
+            "project_name": self.project_title,
+            "producers": self.producer_list,
+            "channel_name": channel_name,
+            "errors": errors,
+        }
+
 
 
 
