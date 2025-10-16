@@ -2,6 +2,7 @@ import requests
 import json
 from pathlib import Path
 import os
+from urllib.parse import urlparse
 
 # links = [
 #   "https://drive.google.com/open?id=168eU8anxBh3arp8Ds21jyrIjpH8Bl2v_&usp=drive_fs",
@@ -17,5 +18,20 @@ import os
 # print(super)
 # print(google)
 
-path = r"G:\\Drives compartilhados\\Marketing_DD_MGX_Masters_01\\DD_229_Coins&Coins\\Render\\MASTER\\EN\\DD-V-229-034_Coins&Coins_DD-VEO-003-001_EN_30s"
-os.startfile(path)
+# url = "https://superplay.monday.com/boards/10072840854/pulses/10072841002"
+# response = True if (urlparse(url if '://' in url else f'https://{url}').hostname or '').lower() == 'superplay.monday.com' else False
+# print(response)
+
+import inspect
+
+def stack_trace():
+    f = inspect.currentframe().f_back
+    return {
+        "func": f.f_code.co_name,
+        "file": os.path.basename(f.f_code.co_filename),
+        "line": f.f_lineno,
+    }
+def jonatan():
+  print(stack_trace())
+
+jonatan()

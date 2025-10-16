@@ -7,11 +7,12 @@ from classes.core.superplay_videohook_project import SuperplayVideoHookProject
 
 
 class ProjectTypeIdentifier():
-    def __init__(self, config: dict, google_data: dict) -> None:
+    def __init__(self, config: dict, src_link: str, google_data: dict) -> None:
         self.local_path_helper = LocalPathHelper(config, google_data)
         self.gdrive_local_path = self.local_path_helper.google_drive_local_path
         self.local_path = self.local_path_helper.full_local_path
         self._config = config
+        self.src_link = src_link
         self.project_types: dict = self._config.get("project_types")
 
     @property
@@ -46,10 +47,11 @@ class ProjectTypeIdentifier():
     def create_projects(self):
 
         if self._project_type == "Video":
-                return SuperplayVideoProject(self._config, self.gdrive_local_path, self.local_path)
-            
+            return SuperplayVideoProject(self._config, self.gdrive_local_path, self.local_path, self.src_link)
+
         elif self._project_type == "Hook":
-            return SuperplayVideoHookProject(self._config, self.gdrive_local_path, self.local_path)
+            return SuperplayVideoHookProject(self._config, self.gdrive_local_path, self.local_path, self.src_link)
 
         else:
-            raise NotImplementedError(f"⚠️  Project type '{self._project_type}' is not implemented yet.")
+            raise NotImplementedError(
+                f"⚠️  Project type '{self._project_type}' is not implemented yet.")

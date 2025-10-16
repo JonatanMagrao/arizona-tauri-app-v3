@@ -1,5 +1,8 @@
 {   
-    "test_mode": true,
+    "test_env": {
+        "is_test":true,
+        "slack_channel_test_id":"C093YV2DSFK"
+    },
     "shared_drive_labels": ["Shared drives", "Drives compartilhados"],
     "company_email_domain": "@superplay.co", 
     "google_endpoints": {
@@ -98,7 +101,7 @@
         "DS": {
             "name": "Disney Solitaire",
             "mktout_folder_name": "DS_DisneySolitaire_OUT",
-            "slack_channel_id": "C08U43XE6GK"
+            "slack_channel_id": "C08U43XE6GK"            
         },
         "DD": {
             "name": "Dice Dreams",

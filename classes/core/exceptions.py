@@ -1,3 +1,9 @@
+import traceback, os
+
+def stack_trace(e: BaseException) -> dict:
+    last = traceback.extract_tb(e.__traceback__)[-1]  # último frame (onde quebrou)
+    return {"func": last.name, "file": os.path.basename(last.filename), "line": last.lineno}
+
 class AppBaseError(Exception):
     """Exceção base para erros customizados do app."""
 

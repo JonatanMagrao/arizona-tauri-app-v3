@@ -101,6 +101,7 @@ class MondayClient:
         b_id, p_id = self._get_monday_ids(url)
         self._board_id = b_id
         self._pulse_id = p_id
+
         return b_id, p_id
 
     def _ensure_context(self):
@@ -368,7 +369,11 @@ class MondayClient:
           }}
         }}
         """
-        self._run_query(q)
+
+        try:
+          self._run_query(q)
+        except Exception as e:
+          raise RuntimeError(f"Error on updating status: {e}")
 
     # ------------------------- NOVOS MÉTODOS -------------------------
 

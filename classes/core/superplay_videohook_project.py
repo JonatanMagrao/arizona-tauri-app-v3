@@ -8,8 +8,8 @@ from typing import Optional
 
 
 class SuperplayVideoHookProject(SuperplayProject):
-    def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path):
-        super().__init__(config, gdrive_local_path, local_path)
+    def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path, src_link: str = None):
+        super().__init__(config, gdrive_local_path, local_path, src_link)
         self.ignore_list: dict = self.project_types.get(self.project_type).get("ignore_list")   
 
     def _get_project_name(self, src_folder: list[str]) -> str:
@@ -57,6 +57,7 @@ class SuperplayVideoHookProject(SuperplayProject):
 
         project = {
             "status":"success",
+            "from_monday": self.from_monday,
             "id": project_id,
             "project_name": project_name,
             "type_label": type_label,
@@ -119,7 +120,7 @@ class SuperplayVideoHookProject(SuperplayProject):
         return contents
     
     def _root_master_folder_path(self) -> Path:
-        if self.test:
+        if self.test_env["is_test"]:
             return Path(self.test_path) / "Render" / "MASTER" 
         else:
             return self.find_path_anchor("Render") / "MASTER" 
@@ -156,7 +157,7 @@ class SuperplayVideoHookProject(SuperplayProject):
             type_folder_relpath = game_type_cfg.get("folder_path")
             segments = [segment.replace("<GAME_CODE>",self.game_code) for segment in type_folder_relpath]
 
-            if self.test:
+            if self.test_env["is_test"]:
                 # return Path(self.test_path) / "Marketing OUT" / game_code_path / segments / "Hooks"
                 return Path(self.test_path,shared_drive_name,game_code_path,*segments)
             else:
@@ -246,8 +247,13 @@ class SuperplayVideoHookProject(SuperplayProject):
             project_name = job.get("project_name")
             links = self.google_util.get_mktout_folder_link(project_name) or []
 
+            channel_id = (job.get("game") or {}).get("slack_channel_id")
+            
+            if self.test_env["is_test"]:
+                channel_id = self.test_env["slack_channel_test_id"]
+
             item = {
-                "channel_id": ((job.get("game") or {}).get("slack_channel_id")),
+                "channel_id": channel_id,
                 "producers": self.producer_list,
                 "project_name": project_name,
                 "video_path": job.get("video_to_preview"),

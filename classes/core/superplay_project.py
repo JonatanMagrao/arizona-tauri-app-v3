@@ -5,6 +5,7 @@ from classes.core.exceptions import (IDError)
 from pathlib import Path
 from typing import Optional
 import os, re
+from urllib.parse import urlparse
 
 FILE_NAME_SUB_NORMALIZER = [
     r"_v\d{1,3}",
@@ -17,10 +18,11 @@ FOLDER_NAME_SUB_NORMALIZER = [
 
 
 class SuperplayProject:
-    def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path):
+    def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path, src_link: str = None):
 
         self.google_util = GoogleDriveHelper(config)
         self.slack_util = SlackSuperplay(config)
+        self.from_monday = src_link if (urlparse(src_link if '://' in src_link else f'https://{src_link}').hostname or '').lower() == 'superplay.monday.com' else False
         self.gdrive_local_path = gdrive_local_path
         self.local_path = local_path
         self.project_types: dict = config.get("project_types")
@@ -34,7 +36,7 @@ class SuperplayProject:
         self._get_producer_ids()
 
         self.test_path = config.get("test_path")
-        self.test = config.get("test_mode")
+        self.test_env = config.get("test_env")
 
     def _get_producer_ids(self):
         producer_email_list = self.project_types.get(self.project_type).get("producer_list").get(self.game_code.upper())
