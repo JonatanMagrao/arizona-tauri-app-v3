@@ -47,15 +47,17 @@ projects_links = [
     # DD_V_195_008_EN,
     # DD_V_195_009_EN,
     # DD_V_241_002_DE,
-    DS_V_018_041_LOC,
+    # DS_V_018_041_LOC,
 
-    DX_H_124_001_NOLANG,
-    DS_H_016_002_NOLANG,
-    DS_H_014_001_EN,
+    # DX_H_124_001_NOLANG,
+    # DS_H_016_002_NOLANG,
+    # DS_H_014_001_EN,
     # TESTE,
-    "https://superplay.monday.com/boards/5239196091/views/115751609/pulses/18113029198/posts/4562215920",
-    "https://superplay.monday.com/boards/5239196091/pulses/18142354137/posts/4566450446",
-    "https://superplay.monday.com/boards/5239196091/pulses/18147479438/posts/4566449384",
+    # "https://superplay.monday.com/boards/5239196091/views/115751609/pulses/18113029198/posts/4562215920",
+    # "https://superplay.monday.com/boards/5239196091/pulses/18142354137/posts/4566450446",
+    # "https://superplay.monday.com/boards/5239196091/pulses/18147479438/posts/4566449384",
+    # "https://superplay.monday.com/boards/5239196091/pulses/18075962660/posts/4547143430?reply=reply-4580074122"
+    "https://superplay.monday.com/boards/10072840854/pulses/10072841002"
 ]
 
 
@@ -64,11 +66,12 @@ projetos = build_projects_from_links(config, projects_links)
 project_metadata = generate_project_metadata(projetos)
 print(json.dumps(project_metadata, ensure_ascii=False, indent=2, default=str))
 
-copy_metadata = copy_projects(projetos)
-print(json.dumps(copy_metadata, ensure_ascii=False, indent=2, default=str))
+# copy_metadata = copy_projects(projetos)
+# print(json.dumps(copy_metadata, ensure_ascii=False, indent=2, default=str))
 
-slack_metadata = notify_slack(projetos)
-print(json.dumps(slack_metadata, ensure_ascii=False, indent=2, default=str))
+# slack_metadata = notify_slack(projetos)
+# print(json.dumps(slack_metadata, ensure_ascii=False, indent=2, default=str))
+
 
 # sequencia lógica
 '''

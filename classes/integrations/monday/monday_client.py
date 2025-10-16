@@ -12,7 +12,7 @@ class MondayClient:
     # padrões de parsing
     _STATUS_UPDATED_RE = re.compile(r"updated to\s+(.+?)\s+by\s+(.+)", re.IGNORECASE | re.DOTALL)
     _STATUS_MARKED_RE  = re.compile(r"marked as\s+(.+?)\s+by\s+(.+)",  re.IGNORECASE | re.DOTALL)
-    _GDRIVE_RE         = re.compile(r"https?://(?:drive)\.google\.com/\S+", re.IGNORECASE)
+    _GDRIVE_RE = re.compile(r"(?P<url>(?:https?://)?(?:drive|docs)\.google\.com/\S+)",re.IGNORECASE)
 
     def __init__(self, config:dict, api_url: Optional[str] = None):
         self.api_key = config.get("monday_config")["MONDAY_TOKEN"]

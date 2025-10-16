@@ -40,12 +40,14 @@ def build_projects_from_links(config: dict, projects_links: list) -> list:
                         {"status":"error","msg": f"No gdrive links found on pinned updates on: {link}"})
                     continue
 
-                mkt_owners = [owner["email"]
-                              for owner in monday_client.get_mkt_owners()]
+                mkt_owners = [owner["email"] for owner in monday_client.get_mkt_owners()]
 
                 for monday_link in monday_links:
+
+                    if len(mkt_owners) > 0:
+                        projeto.producer_list = mkt_owners
+                        
                     projeto = build_projects(config, monday_link)
-                    projeto.producer_list = mkt_owners
                     projetos.append(projeto)
 
             else:

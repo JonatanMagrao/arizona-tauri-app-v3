@@ -66,9 +66,9 @@
                 "folder_names": ["Archive", "_Archive", "Thumbs", "EndCards"]
             },
             "producer_list": {
-                "DS": ["jonatan.m@superplay.co", "jonatan.m@superplay.co"],
-                "DD": ["jonatan.m@superplay.co", "jonatan.m@superplay.co"],
-                "DX": ["jonatan.m@superplay.co", "jonatan.m@superplay.co", "jonatan.m@superplay.co"]
+                "DS": ["omer.by@superplay.co", "shachargr@superplay.co"],
+                "DD": ["gill.o@superplay.co", "lior.p@superplay.co"],
+                "DX": ["tali.n@superplay.co", "omer.by@superplay.co", "shachargr@superplay.co"]
             }
         },
         "H": {
@@ -80,9 +80,9 @@
                 "folder_names": ["Archive", "_Archive", "Thumbs", "EndCards"]
             },
             "producer_list": {
-                "DS": ["jonatan.m@superplay.co", "jonatan.m@superplay.co"],
-                "DD": ["jonatan.m@superplay.co", "jonatan.m@superplay.co"],
-                "DX": ["jonatan.m@superplay.co", "jonatan.m@superplay.co", "jonatan.m@superplay.co"]
+                "DS": ["omer.by@superplay.co", "shachargr@superplay.co"],
+                "DD": ["gill.o@superplay.co", "lior.p@superplay.co"],
+                "DX": ["tali.n@superplay.co", "omer.by@superplay.co", "shachargr@superplay.co"]
             }
         },
         "UGC": {
@@ -98,17 +98,17 @@
         "DS": {
             "name": "Disney Solitaire",
             "mktout_folder_name": "DS_DisneySolitaire_OUT",
-            "slack_channel_id": "C093YV2DSFK"
+            "slack_channel_id": "C08U43XE6GK"
         },
         "DD": {
             "name": "Dice Dreams",
             "mktout_folder_name": "DD_DiceDreams_OUT",
-            "slack_channel_id": "C093YV2DSFK"
+            "slack_channel_id": "C08UDRZF9GC"
         },
         "DX": {
             "name": "Domino Dreams",
             "mktout_folder_name": "DX_DominoDreams_OUT",
-            "slack_channel_id": "C093YV2DSFK"
+            "slack_channel_id": "C08V0JP8R3J"
         }
     }
 
