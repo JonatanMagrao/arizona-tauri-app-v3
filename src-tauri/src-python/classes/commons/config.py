@@ -3,9 +3,11 @@ import os, json
 
 def load_config_json(path: str | Path) -> dict:
     user_download_path = Path(os.environ["USERPROFILE"]) / "Downloads"
+    config_file_path = Path(__file__).resolve().parent.parent.parent / path
 
-    with open(path, "r", encoding="utf-8") as f:
+    with open(config_file_path, "r", encoding="utf-8") as f:
         data = json.load(f)
+
     if not isinstance(data, dict):
         raise TypeError("O JSON não é um objeto (dict); conteúdo lido: "
                         f"{type(data).__name__}")

@@ -284,45 +284,21 @@ class SuperplayVideoHookProject(SuperplayProject):
                 break
 
         errors = []
+        
+        # Caso normal: 1 mensagem por item válido
+        for p in payload:
+            if p.get("error") or not p.get("project_link"):
+                if p.get("error"):
+                    errors.append({"project": p["project_name"], "msg": p["error"]})
+                continue
 
-        if self._has_only_folder:
-            # Quando é apenas pasta, manda 1 mensagem com várias linhas (sem language)
-            valid = [p for p in payload if p.get("project_link") and not p.get("error")]
-            if not valid:
-                errors = [{"project": p["project_name"], "msg": p["error"] or "invalid"} for p in payload]
-                return {
-                    "status": "error",
-                    "project_name": self.project_title,
-                    "producers": self.producer_list,
-                    "channel_name": channel_name,
-                    "errors": errors,
-                }
-
-            base = valid[0]
-            lines = [p["project_link"] for p in valid]  # sem language
             self.slack_util.send_out_msg(
-                base["channel_id"],
-                base["producers"],
-                base["project_name"],
-                "\n".join(lines),
-                base["video_path"],
+                p["channel_id"],
+                p["producers"],
+                p["project_name"],
+                p["project_link"],
+                p["video_path"],
             )
-
-        else:
-            # Caso normal: 1 mensagem por item válido
-            for p in payload:
-                if p.get("error") or not p.get("project_link"):
-                    if p.get("error"):
-                        errors.append({"project": p["project_name"], "msg": p["error"]})
-                    continue
-
-                self.slack_util.send_out_msg(
-                    p["channel_id"],
-                    p["producers"],
-                    p["project_name"],
-                    p["project_link"],
-                    p["video_path"],
-                )
 
         return {
             "status": "success" if not errors else "partial",

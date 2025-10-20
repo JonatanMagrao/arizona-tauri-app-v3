@@ -1,3 +1,4 @@
+import bootstrap
 from classes.commons import (
     load_config_json, build_projects_from_links, copy_projects,
     notify_slack, generate_project_metadata, update_monday_status
@@ -55,7 +56,7 @@ projects_links = [
     # DD_V_241_002_DE,
     # DS_V_018_041_LOC,
 
-    # DX_H_124_001_NOLANG,
+    DX_H_124_001_NOLANG,
     # DS_H_016_002_NOLANG,
     # DS_H_014_001_EN,
     # TESTE,
@@ -66,7 +67,7 @@ projects_links = [
     # "https://superplay.monday.com/boards/10072840854/pulses/10072841002",
     # "https://superplay.monday.com/boards/5239196091/pulses/9736143323",
     # "https://superplay.monday.com/boards/5239196091/pulses/18199074206/posts/4591896756?reply=reply-4593131909",
-    "https://superplay.monday.com/boards/5239196091/pulses/18199215678/posts/4591896239?reply=reply-4593132440"
+    # "https://superplay.monday.com/boards/5239196091/pulses/18199215678/posts/4591896239?reply=reply-4593132440"
 ]
 
 
@@ -81,8 +82,8 @@ print(json.dumps(copy_metadata, ensure_ascii=False, indent=2, default=str))
 slack_metadata = notify_slack(projetos)
 print(json.dumps(slack_metadata, ensure_ascii=False, indent=2, default=str))
 
-monday_status_metadata = update_monday_status(config, monday, project_metadata)
-print(json.dumps(monday_status_metadata, ensure_ascii=False, indent=2, default=str))
+# monday_status_metadata = update_monday_status(config, monday, project_metadata)
+# print(json.dumps(monday_status_metadata, ensure_ascii=False, indent=2, default=str))
 
 
 # logic sequence
