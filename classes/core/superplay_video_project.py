@@ -75,11 +75,13 @@ class SuperplayVideoProject(SuperplayProject):
             root_mktout_folder_path)
 
         # todo aqui, fazer validação para quando for mais de um projeto para pegar os nomes dos arquivos certinho
-        mktout_folder_path = self._marketing_out_folder_path(mktout_game_folder_path, project_name)
-        master_folder_path = self._master_folder_path(root_master_folder_path, project_name)
+        mktout_folder_path = self._marketing_out_folder_path(
+            mktout_game_folder_path, project_name)
+        master_folder_path = self._master_folder_path(
+            root_master_folder_path, project_name)
 
         project = {
-            "status":"success",
+            "status": "success",
             "from_monday": self.from_monday,
             "id": project_id,
             "project_name": project_name,
@@ -90,8 +92,20 @@ class SuperplayVideoProject(SuperplayProject):
             "producers": self.producer_list,
             "content_to_copy": filtered_project_content,
             "video_to_preview": video_to_preview_path,
-            "mktout_folder_path": {"path": mktout_folder_path, "exists": mktout_folder_path.exists()},
-            "master_folder_path": {"path": master_folder_path, "exists": master_folder_path.exists()},
+            "mktout_folder_path": {
+                "path": mktout_folder_path,
+                "exists": mktout_folder_path.exists(),
+                "is_empty": len(list(mktout_folder_path.iterdir())) == 0
+                if mktout_folder_path.exists()
+                else False
+            },
+            "master_folder_path": {
+                "path": master_folder_path,
+                "exists": master_folder_path.exists(),
+                "is_empty": len(list(master_folder_path.iterdir())) == 0
+                if master_folder_path.exists()
+                else False
+            },
             "copy_paths": build_task(self._sanitize_video_file_name, filtered_project_content, [mktout_folder_path, master_folder_path])
         }
 
@@ -269,7 +283,7 @@ class SuperplayVideoProject(SuperplayProject):
         metadata = []
 
         for job in job_manifest:
-            
+
             task = job.get("copy_paths")
             file_copier.copy_variadic_groups(task)
 
@@ -280,10 +294,8 @@ class SuperplayVideoProject(SuperplayProject):
                 "master_folder_path": job["master_folder_path"]["path"],
                 "content_to_copy": [Path(item).name for item in job["content_to_copy"]],
             })
-        
-        return metadata
 
-        
+        return metadata
 
     def build_slack_payload(self):
         payload = []
@@ -332,7 +344,7 @@ class SuperplayVideoProject(SuperplayProject):
                 "project_link") and not p.get("error")]
             if not valid:
                 errors = [{"project": p["project_name"],
-                        "msg": p["error"] or "invalid"} for p in payload]
+                           "msg": p["error"] or "invalid"} for p in payload]
                 return {
                     "status": "error",
                     "project_name": self.project_title,
@@ -375,9 +387,6 @@ class SuperplayVideoProject(SuperplayProject):
             "errors": errors
         }
 
-
     @property
     def remove_from_out(self):
         print("Implement")
-
-

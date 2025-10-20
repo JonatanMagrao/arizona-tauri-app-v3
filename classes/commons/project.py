@@ -131,3 +131,46 @@ def generate_project_metadata(projetos: list):
             continue
 
     return manifest_list
+
+def filter_projects_from_monday(project_metadata: list):
+    return [
+        {"link":project["from_monday"],"project_name":project["project_name"]}
+        for project in project_metadata
+        if project["from_monday"]
+    ]
+
+
+def update_monday_status(
+    config: dict,
+    monday: MondayClient,
+    project_metadata: dict,
+):
+    update_status_to = config.get("monday_config")["MONDAY_STATUS_UPDATE"]
+    response = []
+    only_from_monday = filter_projects_from_monday(project_metadata)
+    updated_list = []
+    
+    for monday_link in only_from_monday:
+        url_to_update = monday_link["link"]
+
+        if url_to_update not in updated_list:
+            try:
+                monday.use_item_url(url_to_update)
+                monday.set_item_status(update_status_to)
+                response.append({
+                    "status": "success",
+                    "msg": f"Updated Monday status for: {monday_link['link']}",
+                    "status_changed_to": update_status_to
+                })
+            except Exception as e:
+                response.append({
+                    "status": "error",
+                    "msg": str(e),
+                    "stack_trace": stack_trace(e)
+                })
+                continue
+                
+
+        updated_list.append(url_to_update)
+
+    return response

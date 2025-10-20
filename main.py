@@ -1,5 +1,7 @@
 from classes.commons import (
-    load_config_json, build_projects_from_links, copy_projects, notify_slack, generate_project_metadata)
+    load_config_json, build_projects_from_links, copy_projects,
+    notify_slack, generate_project_metadata, update_monday_status
+)
 from classes.services import EventTimer
 from classes.integrations.google_drive_helper import GoogleDriveHelper
 from classes.integrations.slack.slack_superplay import SlackSuperplay
@@ -61,36 +63,26 @@ projects_links = [
     # "https://superplay.monday.com/boards/5239196091/pulses/18142354137/posts/4566450446",
     # "https://superplay.monday.com/boards/5239196091/pulses/18147479438/posts/4566449384",
     # "https://superplay.monday.com/boards/5239196091/pulses/18075962660/posts/4547143430?reply=reply-4580074122",
-    "https://superplay.monday.com/boards/10072840854/pulses/10072841002",
-    # "https://superplay.monday.com/boards/5239196091/pulses/9736143323"
+    # "https://superplay.monday.com/boards/10072840854/pulses/10072841002",
+    # "https://superplay.monday.com/boards/5239196091/pulses/9736143323",
+    # "https://superplay.monday.com/boards/5239196091/pulses/18199074206/posts/4591896756?reply=reply-4593131909",
+    "https://superplay.monday.com/boards/5239196091/pulses/18199215678/posts/4591896239?reply=reply-4593132440"
 ]
 
 
 projetos = build_projects_from_links(config, projects_links)
 
 project_metadata = generate_project_metadata(projetos)
-# print(json.dumps(project_metadata, ensure_ascii=False, indent=2, default=str))
+print(json.dumps(project_metadata, ensure_ascii=False, indent=2, default=str))
 
-# copy_metadata = copy_projects(projetos)
-# print(json.dumps(copy_metadata, ensure_ascii=False, indent=2, default=str))
+copy_metadata = copy_projects(projetos)
+print(json.dumps(copy_metadata, ensure_ascii=False, indent=2, default=str))
 
-# slack_metadata = notify_slack(projetos)
-# print(json.dumps(slack_metadata, ensure_ascii=False, indent=2, default=str))
+slack_metadata = notify_slack(projetos)
+print(json.dumps(slack_metadata, ensure_ascii=False, indent=2, default=str))
 
-
-def update_monday_status(project_metadata):
-    only_from_monday = set([m["from_monday"] for m in project_metadata if m["from_monday"]])
-    
-    for monday_link in only_from_monday:
-        try:
-            monday.use_item_url(monday_link)
-            monday.set_item_status("Sent to Marketing")
-        except Exception as e:
-            print(e)
-
-update_monday_status(project_metadata)
-
-
+monday_status_metadata = update_monday_status(config, monday, project_metadata)
+print(json.dumps(monday_status_metadata, ensure_ascii=False, indent=2, default=str))
 
 
 # logic sequence
@@ -98,7 +90,7 @@ update_monday_status(project_metadata)
 1. build_projects → get project info and build (metadata)
 2. project.dispatch_out() → copies files and folders to the specified directories
 3. project.send_slack_message() → sends the project log to Slack
-4. Miro (or the equivalent in Google Sheets or a proprietary app)
-5. Update Monday.com status
+4. Update Monday.com status
+5. Miro (or the equivalent in Google Sheets or a proprietary app)
 6. Send log to Google Sheets
 '''
