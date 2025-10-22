@@ -42,7 +42,11 @@ def build_projects_from_links(config: dict, projects_links: list) -> list:
                     projetos.append({
                         "status": "error",
                         "msg": f"No gdrive links found on pinned updates on: {src_project_link}",
-                        "stack_trace": stack_trace()
+                        "stack_trace": {
+                            "func": "build_projects_from_links",
+                            "file": "project.py",
+                            "line": "48"
+                        }
                     })
                     continue
 
@@ -132,9 +136,11 @@ def generate_project_metadata(projetos: list):
 
     return manifest_list
 
+
 def filter_projects_from_monday(project_metadata: list):
     return [
-        {"link":project["from_monday"],"project_name":project["project_name"]}
+        {"link": project["from_monday"],
+            "project_name": project["project_name"]}
         for project in project_metadata
         if project["from_monday"]
     ]
@@ -149,7 +155,7 @@ def update_monday_status(
     response = []
     only_from_monday = filter_projects_from_monday(project_metadata)
     updated_list = []
-    
+
     for monday_link in only_from_monday:
         url_to_update = monday_link["link"]
 
@@ -169,7 +175,6 @@ def update_monday_status(
                     "stack_trace": stack_trace(e)
                 })
                 continue
-                
 
         updated_list.append(url_to_update)
 

@@ -1,0 +1,100 @@
+/* Fundo cinza do “board” (como no mock) */
+.board {
+  background: #6b6b6b;
+  padding: 16px;
+  overflow-x: hidden;         /* ← evita qualquer scroll horizontal */
+}
+
+/* Tabela como cartões por linha */
+.projects {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0 12px;     /* gap vertical entre linhas */
+  color: #0f172a;
+  /* REMOVIDO: min-width que criava a barra horizontal */
+}
+
+/* Cabeçalho */
+.projects thead th {
+  font-weight: 800;
+  font-size: 14px;
+  color: #111;
+  padding: 6px 12px 10px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* Células */
+.projects tbody td {
+  background: #ffffff;
+  padding: 8px 12px;          /* compacto */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-top: 1px solid rgba(2,6,23,.06);
+  border-bottom: 1px solid rgba(2,6,23,.06);
+}
+
+/* Bordas arredondadas */
+.projects tbody td:first-child {
+  border-left: 1px solid rgba(2,6,23,.06);
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+.projects tbody td:last-child {
+  border-right: 1px solid rgba(2,6,23,.06);
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* --- Larguras responsivas (percentuais) ---
+   As colunas “curtas” ficam estáveis; PROJECT NAME ocupa o restante */
+.col-id       { width: 12%; }   /* ~115–130px em 950–1080px */
+.col-type     { width: 8%;  }
+.col-loc      { width: 6%;  }
+.col-game     { width: 14%; }
+.col-duration { width: 12%; }
+.col-owners   { width: 9%;  }
+.col-status   { width: 12%; }
+/* Nome do projeto fica elástico e ganha o espaço livre */
+.col-name     { width: auto; }  /* ← remove clamp/vw pra não estourar */
+
+/* tamanhos de fonte fluidos (app-like) */
+:root{
+  --font-body: clamp(12px, 1.1vw, 14px);
+  --font-head: clamp(11px, 1.0vw, 13px);
+}
+.projects{ font-size: var(--font-body); }
+.projects thead th{
+  font-size: var(--font-head);
+  font-weight: 800;
+  letter-spacing: .01em;
+  color: #1f2937;
+}
+
+/* Menos padding entre TYPE/LOC/GAME/NAME (mais “colado”) */
+.projects th:nth-child(2),
+.projects td:nth-child(2),
+.projects th:nth-child(3),
+.projects td:nth-child(3),
+.projects th:nth-child(4),
+.projects td:nth-child(4),
+.projects th:nth-child(5),
+.projects td:nth-child(5) {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* Ajuste fino para janelas menores que 1024px (continua sem scrollbar) */
+@media (max-width: 1024px){
+  .col-game     { width: 13%; }
+  .col-duration { width: 11%; }
+  .col-status   { width: 11%; }
+}
+
+/* Em telas muito pequenas, só compacta o padding (sem barra) */
+@media (max-width: 640px){
+  .projects thead th{ padding: 4px 8px 6px; }
+  .projects tbody td{ padding: 6px 9px; }
+}

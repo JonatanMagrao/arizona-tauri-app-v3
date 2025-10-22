@@ -1,50 +1,76 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
+import { useState, useEffect } from "react";
+import { callFunction } from "tauri-plugin-python-api";
 import "./App.css";
+import ProjectsPanel from "./components/ProjectTable/ProjectTable";
+import ActionsBar from "./components/ActionBar/ActionBar";
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+  const loadProject = (links) => callFunction("loadProject", [links])
+  const copiar = () => callFunction("copiar", [])
+  const slackMessage = () => callFunction("slackMessage", [])
+  const mondayStatus = () => callFunction("mondayStatus", [])
+  const completo = () => callFunction("completo", [])
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
-  }
+  const [data,setData] = useState([])
+  const [links,setLinks] = useState([])
+  const [linksInput, setLinksInput] = useState("")
+
+  const handleLoadProject = async (valueFromBar) => {
+    // 1) pega o texto do input (se veio do ActionBar) e normaliza
+    const candidate = String(valueFromBar ?? linksInput).trim();
+
+    // 2) monta a lista final, adicionando o candidate se não for vazio nem duplicado
+    const finalLinks = candidate
+      ? Array.from(new Set([...links, candidate]))
+      : [...links];
+
+    if (finalLinks.length === 0) return;
+
+    // 3) chama o Python com a lista combinada
+    const saida = JSON.parse(await loadProject(finalLinks));
+    setData(saida);
+
+    // 4) limpa fila e input
+    setLinks([]);
+    setLinksInput("");
+  };
+
+  const handleAddLink = (urlFromBar) => {
+    const url = String(urlFromBar ?? linksInput).trim();
+    if (!url) return;
+    // opcional: evitar duplicados
+    if (links.includes(url)) {
+      setLinksInput("");
+      return;
+    }
+    setLinks(prev => [...prev, url]);  // append sem mutar
+    setLinksInput("");                 // limpa o input
+  };
 
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
+    <div>
 
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
+      <ActionsBar
+        value={linksInput}
+        onChange={setLinksInput}
+        onEnter={handleAddLink}
+        onLeftClick={handleLoadProject}   // primeiro botão
+        onRightClick={handleAddLink}  // segundo botão
+        leftLabel="Load"
+        rightLabel="Add"
+      />
 
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-    </main>
+      <button onClick={copiar}>copiar</button>
+      <button onClick={slackMessage}>slack message</button>
+      <button onClick={mondayStatus}>monday</button>
+      <button onClick={completo}>completo</button>
+      <button onClick={() => {
+        console.log(links)
+      }}>show</button>
+      
+      <ProjectsPanel data={data} />
+
+    </div>
   );
 }
 

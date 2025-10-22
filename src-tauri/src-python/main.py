@@ -53,8 +53,8 @@ projects_links = [
     # DS_V_013_001_JA,
     # DD_V_195_008_EN,
     # DD_V_195_009_EN,
-    # DD_V_241_002_DE,
-    # DS_V_018_041_LOC,
+    DD_V_241_002_DE,
+    DS_V_018_041_LOC,
 
     DX_H_124_001_NOLANG,
     # DS_H_016_002_NOLANG,
@@ -67,20 +67,68 @@ projects_links = [
     # "https://superplay.monday.com/boards/10072840854/pulses/10072841002",
     # "https://superplay.monday.com/boards/5239196091/pulses/9736143323",
     # "https://superplay.monday.com/boards/5239196091/pulses/18199074206/posts/4591896756?reply=reply-4593131909",
-    # "https://superplay.monday.com/boards/5239196091/pulses/18199215678/posts/4591896239?reply=reply-4593132440"
+    # "https://superplay.monday.com/boards/5239196091/pulses/18199215678/posts/4591896239?reply=reply-4593132440",
+    # "https://superplay.monday.com/boards/5239196091/pulses/9864252617",
+    # "https://drive.google.com/drive/folders/1TeGwKhhkd_lOyiTPfrqsiVMnR67PeAce"
 ]
 
+_tauri_plugin_functions = [
+    "loadProject",
+    "copiar",
+    "slackMessage",
+    "mondayStatus",
+    "completo"
+]
 
-projetos = build_projects_from_links(config, projects_links)
+_projetos = None
+_project_metadata = None
 
-project_metadata = generate_project_metadata(projetos)
-print(json.dumps(project_metadata, ensure_ascii=False, indent=2, default=str))
+def loadProject(link_list: list):
+  projetos = build_projects_from_links(config, link_list)
+  project_metadata = generate_project_metadata(projetos)
+  global _projetos, _project_metadata
+  _projetos = projetos
+  _project_metadata = project_metadata
+  result = json.dumps(project_metadata, ensure_ascii=False, indent=2, default=str)
+  print(result)
+  return result
 
-copy_metadata = copy_projects(projetos)
-print(json.dumps(copy_metadata, ensure_ascii=False, indent=2, default=str))
+def copiar():
+  copy_metadata = copy_projects(_projetos)
+  result = json.dumps(copy_metadata, ensure_ascii=False, indent=2, default=str)
+  print(result)
+  return result
 
-slack_metadata = notify_slack(projetos)
-print(json.dumps(slack_metadata, ensure_ascii=False, indent=2, default=str))
+def slackMessage():
+  slack_metadata = notify_slack(_projetos)
+  result = json.dumps(slack_metadata, ensure_ascii=False, indent=2, default=str)
+  print(result)
+  return result
+
+def mondayStatus():
+  monday_status_metadata = update_monday_status(config, monday, _project_metadata)
+  result = json.dumps(monday_status_metadata, ensure_ascii=False, indent=2, default=str)
+  print(result)
+  return result
+
+
+def completo():
+  global _projetos
+  project_metadata = generate_project_metadata(_projetos)
+  copy_metadata = copy_projects(_projetos)
+  slack_metadata = notify_slack(_projetos)
+  monday_status_metadata = update_monday_status(config, monday, project_metadata)
+
+# projetos = build_projects_from_links(config, projects_links)
+
+# project_metadata = generate_project_metadata(projetos)
+# print(json.dumps(project_metadata, ensure_ascii=False, indent=2, default=str))
+
+# copy_metadata = copy_projects(projetos)
+# print(json.dumps(copy_metadata, ensure_ascii=False, indent=2, default=str))
+
+# slack_metadata = notify_slack(projetos)
+# print(json.dumps(slack_metadata, ensure_ascii=False, indent=2, default=str))
 
 # monday_status_metadata = update_monday_status(config, monday, project_metadata)
 # print(json.dumps(monday_status_metadata, ensure_ascii=False, indent=2, default=str))
