@@ -41,9 +41,9 @@ class GoogleDriveHelper:
         return u
 
     def sheet_log(self, info: dict):
+        
         try:
-            response = requests.post(
-                self.sheet_endpoint, json=info, timeout=120)
+            response = requests.post(self.sheet_endpoint, json=info, timeout=120)
             response.raise_for_status()
         except requests.RequestException as e:
             raise GoogleSheetLogError(str(e))

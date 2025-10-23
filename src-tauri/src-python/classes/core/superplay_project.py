@@ -110,7 +110,7 @@ class SuperplayProject:
             idx = (len(parts) - 1 - parts[::-1].index(folder_name)
                    ) if First else parts.index(folder_name)
         except ValueError:
-            return None  # âncora não encontrada
+            raise ValueError(f"Folder '{folder_name}' not found in path.")
 
         # Remonta o path até a âncora
         root = Path(parts[0])
