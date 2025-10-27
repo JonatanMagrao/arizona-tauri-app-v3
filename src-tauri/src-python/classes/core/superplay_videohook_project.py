@@ -120,7 +120,7 @@ class SuperplayVideoHookProject(SuperplayProject):
         return contents
     
     def _root_master_folder_path(self) -> Path:
-        if self.test_env["is_test"]:
+        if self.is_test:
             return Path(self.test_path) / "Render" / "MASTER" 
         else:
             return self.find_path_anchor("Render") / "MASTER" 
@@ -157,7 +157,7 @@ class SuperplayVideoHookProject(SuperplayProject):
             type_folder_relpath = game_type_cfg.get("folder_path")
             segments = [segment.replace("<GAME_CODE>",self.game_code) for segment in type_folder_relpath]
 
-            if self.test_env["is_test"]:
+            if self.is_test:
                 # return Path(self.test_path) / "Marketing OUT" / game_code_path / segments / "Hooks"
                 return Path(self.test_path,shared_drive_name,game_code_path,*segments)
             else:
@@ -249,7 +249,7 @@ class SuperplayVideoHookProject(SuperplayProject):
 
             channel_id = (job.get("game") or {}).get("slack_channel_id")
             
-            if self.test_env["is_test"]:
+            if self.is_test:
                 channel_id = self.test_env["slack_channel_test_id"]
 
             item = {

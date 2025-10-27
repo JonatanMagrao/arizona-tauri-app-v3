@@ -3,7 +3,7 @@ from classes.commons import (
     load_config_json, build_projects_from_links, copy_projects,
     notify_slack, generate_project_metadata, update_monday_status
 )
-from classes.services import EventTimer
+from classes.services import (EventTimer, TestEnvStore)
 from classes.integrations.google_drive_helper import GoogleDriveHelper
 from classes.integrations.slack.slack_superplay import SlackSuperplay
 from classes.integrations.monday.monday_client import MondayClient
@@ -46,6 +46,7 @@ timer = EventTimer()
 slack = SlackSuperplay(config)
 google = GoogleDriveHelper(config)
 monday = MondayClient(config)
+test_store = TestEnvStore()
 
 projects_links = [
     # DS_V_042_001_EN,
@@ -78,53 +79,76 @@ _tauri_plugin_functions = [
     "copiar",
     "slackMessage",
     "mondayStatus",
-    "completo"
+    "completo",
+    "enableTestEnv",
+    "disableTestEnv",
+    "isTestEnv"
 ]
+
+def enableTestEnv():
+    test_store.enable()
+
+def disableTestEnv():
+    test_store.disable()
+
+def isTestEnv():
+    return test_store.is_test
 
 _projetos = None
 _project_metadata = None
 
 def loadProject(link_list: list):
-  timer.start("Loading")
-  projetos = build_projects_from_links(config, link_list)
-  project_metadata = generate_project_metadata(projetos)
-  global _projetos, _project_metadata
-  _projetos = projetos
-  _project_metadata = project_metadata
-  result = json.dumps(project_metadata, ensure_ascii=False, indent=2, default=str)
-  timer.end("Loading")
-  print(timer.log())
-  print(result)
-  return result
+    timer.start("Loading")
+    projetos = build_projects_from_links(config, link_list)
+    project_metadata = generate_project_metadata(projetos)
+    global _projetos, _project_metadata
+    _projetos = projetos
+    _project_metadata = project_metadata
+    result = json.dumps(project_metadata, ensure_ascii=False,
+                        indent=2, default=str)
+    timer.end("Loading")
+    print(timer.log())
+    print(result)
+    return result
+
 
 def copiar():
-  copy_metadata = copy_projects(_projetos)
-  result = json.dumps(copy_metadata, ensure_ascii=False, indent=2, default=str)
-  print(result)
-  return result
+    copy_metadata = copy_projects(_projetos)
+    result = json.dumps(copy_metadata, ensure_ascii=False,
+                        indent=2, default=str)
+    print(result)
+    return result
+
 
 def slackMessage():
-  slack_metadata = notify_slack(_projetos)
-  result = json.dumps(slack_metadata, ensure_ascii=False, indent=2, default=str)
-  print(result)
-  return result
+    slack_metadata = notify_slack(_projetos)
+    result = json.dumps(slack_metadata, ensure_ascii=False,
+                        indent=2, default=str)
+    print(result)
+    return result
+
 
 def mondayStatus():
-  monday_status_metadata = update_monday_status(config, monday, _project_metadata)
-  result = json.dumps(monday_status_metadata, ensure_ascii=False, indent=2, default=str)
-  print(result)
-  return result
+    monday_status_metadata = update_monday_status(
+        config, monday, _project_metadata)
+    result = json.dumps(monday_status_metadata,
+                        ensure_ascii=False, indent=2, default=str)
+    print(result)
+    return result
 
 
 def completo():
-  global _projetos
-  project_metadata = generate_project_metadata(_projetos)
-  copy_metadata = copy_projects(_projetos)
-  print(json.dumps(copy_metadata, ensure_ascii=False, indent=2, default=str))
-  slack_metadata = notify_slack(_projetos)
-  print(json.dumps(slack_metadata, ensure_ascii=False, indent=2, default=str))
-  monday_status_metadata = update_monday_status(config, monday, project_metadata)
-  print(json.dumps(monday_status_metadata, ensure_ascii=False, indent=2, default=str))
+    global _projetos
+    project_metadata = generate_project_metadata(_projetos)
+    copy_metadata = copy_projects(_projetos)
+    print(json.dumps(copy_metadata, ensure_ascii=False, indent=2, default=str))
+    slack_metadata = notify_slack(_projetos)
+    print(json.dumps(slack_metadata, ensure_ascii=False, indent=2, default=str))
+    monday_status_metadata = update_monday_status(
+        config, monday, project_metadata)
+    print(json.dumps(monday_status_metadata,
+          ensure_ascii=False, indent=2, default=str))
+
 
 
 # projetos = build_projects_from_links(config, projects_links)

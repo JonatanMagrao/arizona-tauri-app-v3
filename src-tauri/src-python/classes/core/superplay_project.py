@@ -2,6 +2,7 @@ from classes.commons import find_file_in_tree_from
 from classes.integrations.google_drive_helper import GoogleDriveHelper
 from classes.integrations.slack.slack_superplay import SlackSuperplay
 from classes.core.exceptions import (IDError)
+from classes.services import (TestEnvStore)
 from pathlib import Path
 from typing import Optional
 import os, re
@@ -37,6 +38,7 @@ class SuperplayProject:
 
         self.test_path = config.get("test_path")
         self.test_env = config.get("test_env")
+        self.is_test = TestEnvStore().is_test
 
     def _get_producer_ids(self):
         producer_email_list = self.project_types.get(self.project_type).get("producer_list").get(self.game_code.upper())

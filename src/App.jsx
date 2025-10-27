@@ -5,32 +5,70 @@ import ProjectsPanel from "./components/ProjectTable/ProjectTable";
 import ActionsBar from "./components/ActionBar/ActionBar";
 
 function App() {
-  const loadProject = (links) => callFunction("loadProject", [links])
-  const copiar = () => callFunction("copiar", [])
-  const slackMessage = () => callFunction("slackMessage", [])
-  const mondayStatus = () => callFunction("mondayStatus", [])
-  const completo = () => callFunction("completo", [])
+  const loadProject = (links) => callFunction("loadProject", [links]);
+  const copiar = () => callFunction("copiar", []);
+  const slackMessage = () => callFunction("slackMessage", []);
+  const mondayStatus = () => callFunction("mondayStatus", []);
+  const completo = () => callFunction("completo", []);
 
-  const [data,setData] = useState([])
-  const [links,setLinks] = useState([])
-  const [linksInput, setLinksInput] = useState("")
+  // test env fns
+  const enableTestEnv = () => callFunction("enableTestEnv", []);
+  const disableTestEnv = () => callFunction("disableTestEnv", []);
+  const isTestEnvEnabled = () => callFunction("isTestEnvEnabled", []);
+
+  // estados
+  const [data, setData] = useState([]);
+  const [links, setLinks] = useState([]);
+  const [linksInput, setLinksInput] = useState("");
+
+  // estado do checkbox
+  const [isTest, setIsTest] = useState(false);
+  const [loadingTest, setLoadingTest] = useState(true);
+
+  // helper robusto para interpretar retorno (bool, "true"/"false", "1"/"0")
+  const toBool = (v) => {
+    if (typeof v === "boolean") return v;
+    const s = String(v).trim().toLowerCase();
+    return s === "true" || s === "1" || s === "yes";
+  };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const resp = await isTestEnvEnabled();
+        setIsTest(toBool(resp));
+      } catch (e) {
+        console.error("Error on isTestEnvEnabled:", e);
+      } finally {
+        setLoadingTest(false);
+      }
+    })();
+  }, []);
+
+  const handleTestCheckbox = async (e) => {
+    const next = e.target.checked;
+    // UI otimista
+    const prev = isTest;
+    setIsTest(next);
+    try {
+      if (next) await enableTestEnv();
+      else await disableTestEnv();
+    } catch (err) {
+      console.error("Error on enableTestEnv:", err);
+      // reverte em caso de erro
+      setIsTest(prev);
+    }
+  };
 
   const handleLoadProject = async (valueFromBar) => {
-    // 1) pega o texto do input (se veio do ActionBar) e normaliza
     const candidate = String(valueFromBar ?? linksInput).trim();
-
-    // 2) monta a lista final, adicionando o candidate se não for vazio nem duplicado
     const finalLinks = candidate
       ? Array.from(new Set([...links, candidate]))
       : [...links];
-
     if (finalLinks.length === 0) return;
 
-    // 3) chama o Python com a lista combinada
     const saida = JSON.parse(await loadProject(finalLinks));
     setData(saida);
-
-    // 4) limpa fila e input
     setLinks([]);
     setLinksInput("");
   };
@@ -38,38 +76,45 @@ function App() {
   const handleAddLink = (urlFromBar) => {
     const url = String(urlFromBar ?? linksInput).trim();
     if (!url) return;
-    // opcional: evitar duplicados
     if (links.includes(url)) {
       setLinksInput("");
       return;
     }
-    setLinks(prev => [...prev, url]);  // append sem mutar
-    setLinksInput("");                 // limpa o input
+    setLinks((prev) => [...prev, url]);
+    setLinksInput("");
   };
 
   return (
     <div>
-
       <ActionsBar
         value={linksInput}
         onChange={setLinksInput}
         onEnter={handleAddLink}
-        onLeftClick={handleLoadProject}   // primeiro botão
-        onRightClick={handleAddLink}  // segundo botão
+        onLeftClick={handleLoadProject}
+        onRightClick={handleAddLink}
         leftLabel="Load"
         rightLabel="Add"
       />
 
-      <button onClick={copiar}>copiar</button>
-      <button onClick={slackMessage}>slack message</button>
-      <button onClick={mondayStatus}>monday</button>
-      <button onClick={completo}>completo</button>
-      <button onClick={() => {
-        console.log(links)
-      }}>show</button>
-      
-      <ProjectsPanel data={data} />
+      <div style={{ display: "flex", gap: 8, alignItems: "center", margin: "8px 0" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <input
+            type="checkbox"
+            checked={isTest}
+            onChange={handleTestCheckbox}
+            disabled={loadingTest}
+          />
+          Test Mode {loadingTest ? "(reading…)" : isTest ? "(enabled)" : "(disabled)"}
+        </label>
+      </div>
 
+      <button onClick={copiar}>Copy</button>
+      <button onClick={slackMessage}>Slack</button>
+      <button onClick={mondayStatus}>Monday</button>
+      <button onClick={completo}>Full</button>
+      <button onClick={() => { console.log(links); }}>Show (remove)</button>
+
+      <ProjectsPanel data={data} />
     </div>
   );
 }

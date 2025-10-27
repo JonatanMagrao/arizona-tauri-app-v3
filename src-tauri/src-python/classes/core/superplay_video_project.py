@@ -176,7 +176,7 @@ class SuperplayVideoProject(SuperplayProject):
         return contents
 
     def _root_master_folder_path(self, language: str) -> Path:
-        if self.test_env["is_test"]:
+        if self.is_test:
             return Path(self.test_path) / "Render" / "MASTER" / language.upper()
         else:
             return self.find_path_anchor("Render") / "MASTER" / language.upper()
@@ -214,7 +214,7 @@ class SuperplayVideoProject(SuperplayProject):
             shared_drive_name = game_type_cfg.get("shared_drive_name")
             type_folder_relpath = game_type_cfg.get("folder_path")
 
-            if self.test_env["is_test"]:
+            if self.is_test:
                 # return Path(self.test_path) / "Marketing OUT" / game_code_path / type_folder_path / language
                 return Path(self.test_path, shared_drive_name, game_code_path, *type_folder_relpath, language)
             else:
@@ -304,7 +304,7 @@ class SuperplayVideoProject(SuperplayProject):
             links = self.google_util.get_mktout_folder_link(project_name) or []
             channel_id = (job.get("game") or {}).get("slack_channel_id")
 
-            if self.test_env["is_test"]:
+            if self.is_test:
                 channel_id = self.test_env["slack_channel_test_id"]
 
             item = {

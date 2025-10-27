@@ -1,6 +1,5 @@
 {   
     "test_env": {
-        "is_test": true,
         "slack_channel_test_id":"C093YV2DSFK"
     },
     "shared_drive_labels": ["Shared drives", "Drives compartilhados"],
