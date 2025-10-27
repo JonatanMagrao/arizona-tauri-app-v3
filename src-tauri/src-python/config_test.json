@@ -1,6 +1,6 @@
 {   
     "test_env": {
-        "is_test": false,
+        "is_test": true,
         "slack_channel_test_id":"C093YV2DSFK"
     },
     "shared_drive_labels": ["Shared drives", "Drives compartilhados"],
@@ -71,7 +71,7 @@
             },
             "producer_list": {
                 "DS": ["omer.by@superplay.co", "shachargr@superplay.co"],
-                "DD": ["gill.o@superplay.co", "lior.p@superplay.co"],
+                "DD": ["gill.o@superplay.co", "lior.p@superplay.co", "karinm@superplay.co"],
                 "DX": ["tali.n@superplay.co", "omer.by@superplay.co", "shachargr@superplay.co"]
             }
         },
@@ -85,7 +85,7 @@
             },
             "producer_list": {
                 "DS": ["omer.by@superplay.co", "shachargr@superplay.co"],
-                "DD": ["gill.o@superplay.co", "lior.p@superplay.co"],
+                "DD": ["gill.o@superplay.co", "lior.p@superplay.co", "karinm@superplay.co"],
                 "DX": ["tali.n@superplay.co", "omer.by@superplay.co", "shachargr@superplay.co"]
             }
         },

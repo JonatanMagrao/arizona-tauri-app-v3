@@ -4,43 +4,19 @@ import os
 import re
 from pathlib import Path
 import sys
+from classes.commons.shared_drives import full_local_path
 
 class LocalPathHelper:
     def __init__(self, config: dict, google_data: dict):
         self.is_mac = platform.system().lower() == "darwin"
         self._config = config
         self.shared_drive_labels = self._config.get("shared_drive_labels")
-        self.google_path = google_data.get("path")
-
-    def _get_full_path_win(self) -> Path:
-        def list_drives_os():
-            return [f"{d}:\\" for d in string.ascii_uppercase if os.path.exists(f"{d}:\\")]
-
-        for drive in list_drives_os():
-            for root in self.shared_drive_labels:
-                full_path = Path(drive, root)
-                if full_path.exists():
-                    return full_path
-
-        raise Exception("Local Google Drive not found (Windows)")
-        
-
-    def _get_full_path_mac(self) -> Path:
-        home = Path.home()
-        for item in home.iterdir():
-            if re.match(r".*@superplay\.co - Google Drive", item.name):
-                for root in self.shared_drive_labels:
-                    full_path = Path(home, item, root)
-                    if full_path.exists():
-                        return full_path
-                    
-        raise Exception("Local Google Drive not found (macOS)")
-        
+        self.google_path = google_data.get("path")        
 
     @property
     def full_local_path(self) -> Path:
         """Automatically selects the correct resolver based on the OS."""
-        return self._get_full_path_mac() if self.is_mac else self._get_full_path_win()
+        return full_local_path()
     
     @property
     def google_drive_local_path(self) -> Path:

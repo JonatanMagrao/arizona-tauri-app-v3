@@ -49,17 +49,19 @@ def build_projects_from_links(config: dict, projects_links: list) -> list:
                         }
                     })
                     continue
-
-                mkt_owners = [owner["email"]
-                              for owner in monday_client.get_mkt_owners()]
+                
+                # assumed the static list. if getting data from monday is needed, uncomment below
+                # mkt_owners = [owner["email"]
+                #               for owner in monday_client.get_mkt_owners()]
 
                 for gdrive_links in gdrive_links_from_monday:
 
                     projeto = build_projects(
                         config, gdrive_links, src_project_link)
-
-                    if len(mkt_owners) > 0:
-                        projeto.producer_list = mkt_owners
+                    
+                    # assumed the static list. if getting data from monday is needed, uncomment below
+                    # if len(mkt_owners) > 0:
+                    #     projeto.producer_list = mkt_owners
 
                     projetos.append(projeto)
 

@@ -6,6 +6,7 @@ from classes.commons.project import (
     build_projects, build_projects_from_links, copy_projects,
     notify_slack, generate_project_metadata, update_monday_status
 )
+from classes.commons.shared_drives import full_local_path
 
 __all__ = [
     "load_config_json",
@@ -18,5 +19,6 @@ __all__ = [
     "copy_projects",
     "notify_slack",
     "generate_project_metadata",
-    "update_monday_status"
+    "update_monday_status",
+    "full_local_path"
 ]

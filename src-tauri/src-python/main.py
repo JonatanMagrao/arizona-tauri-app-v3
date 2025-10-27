@@ -41,7 +41,7 @@ TESTE = "https://drive.google.com/drive/folders/1mngFCnuFg-7pB9MHUoKpFfPArj6lLGx
 
 
 # ==================== Carregar projetos ====================
-config = load_config_json("config_test.json")
+config = load_config_json("config.json")
 timer = EventTimer()
 slack = SlackSuperplay(config)
 google = GoogleDriveHelper(config)
@@ -53,10 +53,10 @@ projects_links = [
     # DS_V_013_001_JA,
     # DD_V_195_008_EN,
     # DD_V_195_009_EN,
-    DD_V_241_002_DE,
-    DS_V_018_041_LOC,
+    # DD_V_241_002_DE,
+    # DS_V_018_041_LOC,
 
-    DX_H_124_001_NOLANG,
+    # DX_H_124_001_NOLANG,
     # DS_H_016_002_NOLANG,
     # DS_H_014_001_EN,
     # TESTE,
@@ -69,7 +69,8 @@ projects_links = [
     # "https://superplay.monday.com/boards/5239196091/pulses/18199074206/posts/4591896756?reply=reply-4593131909",
     # "https://superplay.monday.com/boards/5239196091/pulses/18199215678/posts/4591896239?reply=reply-4593132440",
     # "https://superplay.monday.com/boards/5239196091/pulses/9864252617",
-    # "https://drive.google.com/drive/folders/1TeGwKhhkd_lOyiTPfrqsiVMnR67PeAce"
+    # "https://drive.google.com/drive/folders/1TeGwKhhkd_lOyiTPfrqsiVMnR67PeAce",
+    "https://superplay.monday.com/boards/5239196091/pulses/18147477761/posts/4569309015?reply=reply-4605634061"
 ]
 
 _tauri_plugin_functions = [
