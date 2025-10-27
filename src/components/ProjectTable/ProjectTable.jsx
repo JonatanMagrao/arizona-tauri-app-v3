@@ -2,13 +2,16 @@ import React from "react";
 import "./ProjectTable.css";
 import ProjectRow from "../ProjectRow/ProjectRow";
 
-export default function ProjectTable({ data }) {
+export default function ProjectTable({ data, openFolder, openThumbnail, openParentFileFolder}) {
 
   const rows = data.map((item,i) => {
 
     const id = `${item.id.game_code}-${item.id.project_type}-${item.id.project_number}-${item.id.project_iteration}`
     const loc = item?.language?.abbr ? item.language.abbr.toUpperCase() : ""
     const duration = item.duration ? item.duration : ""
+    const mktoutData = item.mktout_folder_path
+    const masterData = item.master_folder_path
+    const previewPath = item.video_to_preview
 
     return (
       <ProjectRow
@@ -21,6 +24,12 @@ export default function ProjectTable({ data }) {
         duration={`${duration} Seconds`}
         owners={item.producers}
         status={item.status}
+        mktoutData={mktoutData}
+        masterData={masterData}
+        previewPath={previewPath}
+        openFolder={openFolder}
+        openThumbnail={openThumbnail}
+        openParentFileFolder={openParentFileFolder}
       />
     );
   })

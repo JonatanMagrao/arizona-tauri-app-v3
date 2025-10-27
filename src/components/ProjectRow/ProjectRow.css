@@ -1,0 +1,88 @@
+/* container geral da tabela */
+.table-container {
+  width: 100%;
+  border-spacing: 0 8px; /* espaçamento vertical entre as linhas */
+  border-collapse: separate;
+}
+
+/* cada linha parece um “card” */
+.table-container tr {
+  background: #3a3a3a;          /* cor de fundo */
+  border-radius: 10px;          /* cantos arredondados */
+  overflow: hidden;             /* garante que o radius funcione */
+  transition: background 0.2s ease;
+}
+
+.table-container tr:hover {
+  background: #484848;          /* leve destaque ao passar o mouse */
+}
+
+/* células dentro das linhas */
+.table-container td {
+  padding: 10px 12px;
+  border: none;
+  color: #fff;                  /* texto branco */
+}
+
+/* opcional: centraliza os ícones */
+.table-container td:last-child,
+.table-container td:nth-last-child(-n+4) {
+  text-align: center;
+}
+
+/* remove bordas padrões da tabela */
+.table-container th, .table-container td {
+  border: none;
+}
+
+/* -------- ICON BUTTONS (sem borda/sem fundo) -------- */
+.table-container td > button.icon-btn,
+tr td > button.icon-btn,
+.icon-btn {
+  all: unset;                         /* zera tudo (inclui border/bg) */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.icon-btn:hover,
+.icon-btn:active,
+.icon-btn:focus,
+.icon-btn:focus-visible {
+  outline: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* ícones: padrão 100% (quando existir) */
+.icon-btn img {
+  display: block;
+  width: 22px;
+  height: 22px;
+  opacity: 1;                         /* <= alterado para 1 */
+  transition: opacity 0.2s;
+  pointer-events: none;               /* clique vai para o botão */
+}
+
+/* quando a pasta NÃO existir (exists === false) */
+.icon-btn.icon-dim img {
+  opacity: 0.5;
+}
+
+/* evita clarear no hover quando estiver "dim" */
+.icon-btn.icon-dim:hover img {
+  opacity: 0.5;
+}
+
+/* hover normal (mantém 100%) */
+.icon-btn:hover img { opacity: 1; }

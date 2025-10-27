@@ -11,6 +11,7 @@ from pathlib import Path
 import sys
 import json
 import os
+import subprocess
 # sys.tracebacklimit = 0
 
 # ==================== Regular Projects =================
@@ -82,7 +83,11 @@ _tauri_plugin_functions = [
     "completo",
     "enableTestEnv",
     "disableTestEnv",
-    "isTestEnv"
+    "isTestEnv",
+    "openFolder",
+    "openThumbnail",
+    "openParentFileFolder",
+    "getProjectMetadata"
 ]
 
 def enableTestEnv():
@@ -96,6 +101,10 @@ def isTestEnv():
 
 _projetos = None
 _project_metadata = None
+
+def getProjectMetadata():
+    global _project_metadata
+    return json.dumps(_project_metadata or [], ensure_ascii=False, indent=2, default=str)
 
 def loadProject(link_list: list):
     timer.start("Loading")
@@ -116,6 +125,12 @@ def copiar():
     copy_metadata = copy_projects(_projetos)
     result = json.dumps(copy_metadata, ensure_ascii=False,
                         indent=2, default=str)
+    
+    update_project_metadata = generate_project_metadata(_projetos)
+    global _project_metadata
+
+    _project_metadata = update_project_metadata
+
     print(result)
     return result
 
@@ -149,7 +164,15 @@ def completo():
     print(json.dumps(monday_status_metadata,
           ensure_ascii=False, indent=2, default=str))
 
+def openParentFileFolder(filePath:str):
+    parent_path = str(Path(filePath).parent)
+    os.startfile(parent_path)
 
+def openFolder(filePath: str):
+    os.startfile(filePath)
+
+def openThumbnail(filePath: str):
+    subprocess.run(["thumbnail",filePath])
 
 # projetos = build_projects_from_links(config, projects_links)
 

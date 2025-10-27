@@ -9,7 +9,13 @@ function App() {
   const copiar = () => callFunction("copiar", []);
   const slackMessage = () => callFunction("slackMessage", []);
   const mondayStatus = () => callFunction("mondayStatus", []);
+  const getProjectMetadata = () => callFunction("getProjectMetadata", []);
+
   const completo = () => callFunction("completo", []);
+
+  const openFolder = (filePath) => callFunction("openFolder", [filePath])
+  const openThumbnail = (filePath) => callFunction("openThumbnail", [filePath])
+  const openParentFileFolder = (filePath) => callFunction("openParentFileFolder", [filePath])
 
   // test env fns
   const enableTestEnv = () => callFunction("enableTestEnv", []);
@@ -84,6 +90,18 @@ function App() {
     setLinksInput("");
   };
 
+  // ⬇️ NOVO: copiar e depois atualizar o metadata (para refletir exists)
+  const handleCopyAndRefresh = async () => {
+    try {
+      await copiar(); // cria/copias pastas no backend
+      const updated = await getProjectMetadata(); // pega o cache atualizado do backend
+      const data = JSON.parse(updated);
+      setData(data); // atualiza tabela → ícones atualizam opacidade
+    } catch (e) {
+      console.error("Error on copy & refresh:", e);
+    }
+  };
+
   return (
     <div>
       <ActionsBar
@@ -108,13 +126,18 @@ function App() {
         </label>
       </div>
 
-      <button onClick={copiar}>Copy</button>
+      <button onClick={handleCopyAndRefresh}>Copy</button>
       <button onClick={slackMessage}>Slack</button>
       <button onClick={mondayStatus}>Monday</button>
       <button onClick={completo}>Full</button>
       <button onClick={() => { console.log(links); }}>Show (remove)</button>
 
-      <ProjectsPanel data={data} />
+      <ProjectsPanel
+        data={data}
+        openFolder={openFolder}
+        openThumbnail={openThumbnail}
+        openParentFileFolder={openParentFileFolder}
+      />
     </div>
   );
 }
