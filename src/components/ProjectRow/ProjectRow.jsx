@@ -24,8 +24,8 @@ export default function TableRow({
     const map = {
       success: { bg: "#2e7d32", fg: "#fff" },
       failed:  { bg: "#c62828", fg: "#fff" },
-      warning: { bg: "#ed6c02", fg: "#111" },
-      running: { bg: "#0288d1", fg: "#fff" },
+      slack_notified: { bg: "#ed6c02", fg: "#111" },
+      copied: { bg: "#0288d1", fg: "#fff" },
       ready:   { bg: "#6a1b9a", fg: "#fff" }
     };
     const { bg, fg } = map[s] || { bg: "#6b7280", fg: "#fff" }; // cinza default

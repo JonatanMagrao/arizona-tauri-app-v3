@@ -87,7 +87,7 @@ def copy_projects(projetos: list[SuperplayProject]):
             continue
         try:
             metadata = projeto.dispatch_out()
-            response.append(metadata)
+            response.extend(metadata)
         except Exception:
             continue
 
@@ -101,7 +101,11 @@ def notify_slack(projetos: list):
             continue
         try:
             slack_metadata = projeto.send_slack_message()
-            response.append(slack_metadata)
+            print("from notify slack")
+            jobs = projeto.job_manifest
+            for job in jobs:
+                job["status"] = "slack_notified"
+            response.extend(jobs)
         except Exception as e:
             response.append({
                 "status": "error",

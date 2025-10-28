@@ -81,7 +81,7 @@ class SuperplayVideoProject(SuperplayProject):
             root_master_folder_path, project_name)
 
         project = {
-            "status": "success",
+            "status": "ready",
             "from_monday": self.from_monday,
             "id": project_id,
             "project_name": project_name,
@@ -286,14 +286,16 @@ class SuperplayVideoProject(SuperplayProject):
 
             task = job.get("copy_paths")
             file_copier.copy_variadic_groups(task)
+            job["status"] = "copied"
 
-            metadata.append({
-                "project_name": job["project_name"],
-                "copy_source_folder": str(Path(job["content_to_copy"][0]).parent),
-                "mktout_folder_path": job["mktout_folder_path"]["path"],
-                "master_folder_path": job["master_folder_path"]["path"],
-                "content_to_copy": [Path(item).name for item in job["content_to_copy"]],
-            })
+            metadata.append(job)
+            # metadata.append({
+            #     "project_name": job["project_name"],
+            #     "copy_source_folder": str(Path(job["content_to_copy"][0]).parent),
+            #     "mktout_folder_path": job["mktout_folder_path"]["path"],
+            #     "master_folder_path": job["master_folder_path"]["path"],
+            #     "content_to_copy": [Path(item).name for item in job["content_to_copy"]],
+            # })
 
         return metadata
 

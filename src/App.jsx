@@ -18,7 +18,7 @@ function App() {
   // test env fns
   const enableTestEnv = () => callFunction("enableTestEnv", []);
   const disableTestEnv = () => callFunction("disableTestEnv", []);
-  const isTestEnvEnabled = () => callFunction("isTestEnvEnabled", []);
+  const isTestEnvEnabled = () => callFunction("isTestEnv", []);
 
   // estados
   const [data, setData] = useState([]);
@@ -27,7 +27,7 @@ function App() {
 
   // estado do checkbox
   const [isTest, setIsTest] = useState(false);
-  const [loadingTest, setLoadingTest] = useState(true);
+  const [bootstrapped, setBootstrapped] = useState(false);
 
   // helper robusto para interpretar retorno (bool, "true"/"false", "1"/"0")
   const toBool = (v) => {
@@ -41,10 +41,11 @@ function App() {
       try {
         const resp = await isTestEnvEnabled();
         setIsTest(toBool(resp));
+        console.log(resp)
       } catch (e) {
         console.error("Error on isTestEnvEnabled:", e);
       } finally {
-        setLoadingTest(false);
+        setBootstrapped(true);
       }
     })();
   }, []);
@@ -100,10 +101,21 @@ function App() {
     }
   };
 
+  const handleNotifySlack = async () => {
+    try{
+      await slackMessage();
+      const updated = await getProjectMetadata()
+      const data = JSON.parse(updated);
+      setData(data);
+    } catch (e) {
+      console.error("Error on notify slack:", e);
+    }
+  }
+
   const handleFullProcess = async () => {
     try {
       await handleCopyAndRefresh();
-      await slackMessage();
+      await handleNotifySlack();
       await mondayStatus();
     } catch (e) {
       console.error("Error on full process:", e);
@@ -130,12 +142,12 @@ function App() {
             onChange={handleTestCheckbox}
             disabled={loadingTest}
           />
-          Test Mode {loadingTest ? "(reading…)" : isTest ? "(enabled)" : "(disabled)"}
+          Test Mode { isTest ? "(enabled)" : "(disabled)"}
         </label>
       </div>
 
       <button onClick={handleCopyAndRefresh}>Copy</button>
-      <button onClick={slackMessage}>Slack</button>
+      <button onClick={handleNotifySlack}>Slack</button>
       <button onClick={mondayStatus}>Monday</button>
       <button onClick={handleFullProcess}>Full</button>
       <button onClick={() => { console.log(links); }}>Show links</button>

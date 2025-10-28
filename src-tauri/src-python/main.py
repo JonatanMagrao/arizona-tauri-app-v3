@@ -125,21 +125,24 @@ def copiar():
     result = json.dumps(copy_metadata, ensure_ascii=False,
                         indent=2, default=str)
     
-    update_project_metadata = generate_project_metadata(_projetos)
     global _project_metadata
 
-    _project_metadata = update_project_metadata
+    _project_metadata = copy_metadata
 
     print(result)
-    return result
+    return copy_metadata
 
 
 def slackMessage():
     slack_metadata = notify_slack(_projetos)
     result = json.dumps(slack_metadata, ensure_ascii=False,
                         indent=2, default=str)
+    
+    global _project_metadata
+
+    _project_metadata = slack_metadata
     print(result)
-    return result
+    return slack_metadata
 
 
 def mondayStatus():
