@@ -80,23 +80,11 @@ _tauri_plugin_functions = [
     "copiar",
     "slackMessage",
     "mondayStatus",
-    "enableTestEnv",
-    "disableTestEnv",
-    "isTestEnv",
     "openFolder",
     "openThumbnail",
     "openParentFileFolder",
     "getProjectMetadata"
 ]
-
-def enableTestEnv():
-    test_store.enable()
-
-def disableTestEnv():
-    test_store.disable()
-
-def isTestEnv():
-    return test_store.is_test
 
 _projetos = None
 _project_metadata = None

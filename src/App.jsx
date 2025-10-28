@@ -1,10 +1,22 @@
 import { useState, useEffect } from "react";
 import { callFunction } from "tauri-plugin-python-api";
+import { readTextFile, writeTextFile, exists } from '@tauri-apps/plugin-fs';
+import { join , dataDir} from "@tauri-apps/api/path";
 import "./App.css";
 import ProjectsPanel from "./components/ProjectTable/ProjectTable";
 import ActionsBar from "./components/ActionBar/ActionBar";
 
 function App() {
+
+  const REL_DIR = "com.superplay.out-process.test-env";
+  const REL_FILE = "test.json";
+
+  const getTestFile = async () => {
+    const base = await dataDir()
+    const file = await join(base, REL_DIR, REL_FILE);
+    return file;
+  }
+
   const loadProject = (links) => callFunction("loadProject", [links]);
   const copiar = () => callFunction("copiar", []);
   const slackMessage = () => callFunction("slackMessage", []);
@@ -15,11 +27,6 @@ function App() {
   const openThumbnail = (filePath) => callFunction("openThumbnail", [filePath])
   const openParentFileFolder = (filePath) => callFunction("openParentFileFolder", [filePath])
 
-  // test env fns
-  const enableTestEnv = () => callFunction("enableTestEnv", []);
-  const disableTestEnv = () => callFunction("disableTestEnv", []);
-  const isTestEnvEnabled = () => callFunction("isTestEnvEnabled", []);
-
   // estados
   const [data, setData] = useState([]);
   const [links, setLinks] = useState([]);
@@ -27,41 +34,34 @@ function App() {
 
   // estado do checkbox
   const [isTest, setIsTest] = useState(false);
-  const [loadingTest, setLoadingTest] = useState(true);
-
-  // helper robusto para interpretar retorno (bool, "true"/"false", "1"/"0")
-  const toBool = (v) => {
-    if (typeof v === "boolean") return v;
-    const s = String(v).trim().toLowerCase();
-    return s === "true" || s === "1" || s === "yes";
-  };
 
   useEffect(() => {
     (async () => {
       try {
-        const resp = await isTestEnvEnabled();
-        setIsTest(toBool(resp));
+        const file = await getTestFile();
+        const resp = await readTextFile(file)
+        const json = JSON.parse(resp);
+
+        setIsTest(json.is_test);
       } catch (e) {
         console.error("Error on isTestEnvEnabled:", e);
-      } finally {
-        setLoadingTest(false);
-      }
+      } 
     })();
   }, []);
 
   const handleTestCheckbox = async (e) => {
-    const next = e.target.checked;
-    // UI otimista
-    const prev = isTest;
-    setIsTest(next);
-    try {
-      if (next) await enableTestEnv();
-      else await disableTestEnv();
-    } catch (err) {
-      console.error("Error on enableTestEnv:", err);
-      // reverte em caso de erro
-      setIsTest(prev);
-    }
+    const isChecked = e.target.checked;
+
+    const file = await getTestFile();
+    const content = await readTextFile(file)
+    const json = JSON.parse(content);
+
+    json.is_test = isChecked
+
+    await writeTextFile(file, JSON.stringify(json))
+
+    setIsTest(isChecked)
+
   };
 
   const handleLoadProject = async (valueFromBar) => {
@@ -88,7 +88,6 @@ function App() {
     setLinksInput("");
   };
 
-  // ⬇️ NOVO: copiar e depois atualizar o metadata (para refletir exists)
   const handleCopyAndRefresh = async () => {
     try {
       await copiar(); // cria/copias pastas no backend
@@ -128,9 +127,8 @@ function App() {
             type="checkbox"
             checked={isTest}
             onChange={handleTestCheckbox}
-            disabled={loadingTest}
           />
-          Test Mode {loadingTest ? "(reading…)" : isTest ? "(enabled)" : "(disabled)"}
+          Test mode: {isTest ? "Yes" : "No"}
         </label>
       </div>
 
