@@ -80,7 +80,6 @@ _tauri_plugin_functions = [
     "copiar",
     "slackMessage",
     "mondayStatus",
-    "completo",
     "enableTestEnv",
     "disableTestEnv",
     "isTestEnv",
@@ -151,18 +150,6 @@ def mondayStatus():
     print(result)
     return result
 
-
-def completo():
-    global _projetos
-    project_metadata = generate_project_metadata(_projetos)
-    copy_metadata = copy_projects(_projetos)
-    print(json.dumps(copy_metadata, ensure_ascii=False, indent=2, default=str))
-    slack_metadata = notify_slack(_projetos)
-    print(json.dumps(slack_metadata, ensure_ascii=False, indent=2, default=str))
-    monday_status_metadata = update_monday_status(
-        config, monday, project_metadata)
-    print(json.dumps(monday_status_metadata,
-          ensure_ascii=False, indent=2, default=str))
 
 def openParentFileFolder(filePath:str):
     parent_path = str(Path(filePath).parent)

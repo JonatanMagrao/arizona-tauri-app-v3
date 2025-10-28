@@ -11,8 +11,6 @@ function App() {
   const mondayStatus = () => callFunction("mondayStatus", []);
   const getProjectMetadata = () => callFunction("getProjectMetadata", []);
 
-  const completo = () => callFunction("completo", []);
-
   const openFolder = (filePath) => callFunction("openFolder", [filePath])
   const openThumbnail = (filePath) => callFunction("openThumbnail", [filePath])
   const openParentFileFolder = (filePath) => callFunction("openParentFileFolder", [filePath])
@@ -102,6 +100,16 @@ function App() {
     }
   };
 
+  const handleFullProcess = async () => {
+    try {
+      await handleCopyAndRefresh();
+      await slackMessage();
+      await mondayStatus();
+    } catch (e) {
+      console.error("Error on full process:", e);
+    }
+  }
+
   return (
     <div>
       <ActionsBar
@@ -129,8 +137,8 @@ function App() {
       <button onClick={handleCopyAndRefresh}>Copy</button>
       <button onClick={slackMessage}>Slack</button>
       <button onClick={mondayStatus}>Monday</button>
-      <button onClick={completo}>Full</button>
-      <button onClick={() => { console.log(links); }}>Show (remove)</button>
+      <button onClick={handleFullProcess}>Full</button>
+      <button onClick={() => { console.log(links); }}>Show links</button>
 
       <ProjectsPanel
         data={data}
