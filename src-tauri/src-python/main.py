@@ -126,6 +126,10 @@ def slackMessage():
     slack_metadata = notify_slack(_projetos)
     result = json.dumps(slack_metadata, ensure_ascii=False,
                         indent=2, default=str)
+    
+    global _project_metadata
+    _project_metadata = slack_metadata
+    
     print(result)
     return result
 

@@ -425,13 +425,21 @@ class SuperplayVideoProject(SuperplayProject):
                     p["video_path"],
                 )
 
-        return {
-            "status": "success" if not errors else "partial",
-            "project_name": self.project_title,
-            "producers": self.producer_list,
-            "channel_name": channel_name,
-            "errors": errors
-        }
+        job_manifest = self.job_manifest()
+        for job in job_manifest:
+            job["status"] = "notified"
+
+        print(json.dumps(job_manifest, ensure_ascii=False, indent=2, default=str))
+
+        return job_manifest
+
+        # return {
+        #     "status": "success" if not errors else "partial",
+        #     "project_name": self.project_title,
+        #     "producers": self.producer_list,
+        #     "channel_name": channel_name,
+        #     "errors": errors
+        # }
 
     @property
     def remove_from_out(self):

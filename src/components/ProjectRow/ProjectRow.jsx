@@ -27,7 +27,7 @@ export default function TableRow({
       notified: { bg: "#1565c0", fg: "#fff" },
       success: { bg: "#2e7d32", fg: "#fff" },
       warning: { bg: "#ed6c02", fg: "#111" },
-      failed: { bg: "#c62828", fg: "#fff" },
+      error: { bg: "#c62828", fg: "#fff" },
     };
     const { bg, fg } = map[s] || { bg: "#6b7280", fg: "#fff" }; // cinza default
     return {

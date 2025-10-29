@@ -14,7 +14,8 @@ def build_projects(config, gdrive_link_url: str, src_link: str = None):
         src_link = src_link if src_link else gdrive_link_url
         google_helper = GoogleDriveHelper(config)
         google_data = google_helper.get_link_data(gdrive_link_url)
-        project_identifier = ProjectTypeIdentifier(config, src_link, google_data)
+        project_identifier = ProjectTypeIdentifier(
+            config, src_link, google_data)
         projetos = project_identifier.create_projects
         return projetos
     except Exception as e:
@@ -48,7 +49,7 @@ def build_projects_from_links(config: dict, projects_links: list) -> list:
                         }
                     })
                     continue
-                
+
                 # assumed the static list. if getting data from monday is needed, uncomment below
                 # mkt_owners = [owner["email"]
                 #               for owner in monday_client.get_mkt_owners()]
@@ -57,7 +58,7 @@ def build_projects_from_links(config: dict, projects_links: list) -> list:
 
                     projeto = build_projects(
                         config, gdrive_links, src_project_link)
-                    
+
                     # assumed the static list. if getting data from monday is needed, uncomment below
                     # if len(mkt_owners) > 0:
                     #     projeto.producer_list = mkt_owners
@@ -82,12 +83,24 @@ def build_projects_from_links(config: dict, projects_links: list) -> list:
 def copy_projects(projetos: list[SuperplayProject]):
     response = []
     for projeto in projetos:
-        if isinstance(projeto, dict) and projeto["status"] == "error":
+
+        if isinstance(projeto, dict):
             continue
+
         try:
             metadata = projeto.dispatch_out()
             response.extend(metadata)
-        except Exception:
+        except Exception as e:
+            job_manifest = projeto.job_manifest()
+
+            for job in job_manifest:
+                job["status"] = "error"
+                job["error_message"] = {
+                    "msg": str(e),
+                    "stack_trace": stack_trace(e)
+                }
+                response.append(job)
+                
             continue
 
     return response
@@ -96,17 +109,24 @@ def copy_projects(projetos: list[SuperplayProject]):
 def notify_slack(projetos: list):
     response = []
     for projeto in projetos:
+
         if isinstance(projeto, dict) and projeto["status"] == "error":
             continue
+
         try:
             slack_metadata = projeto.send_slack_message()
-            response.append(slack_metadata)
+            response.extend(slack_metadata)
         except Exception as e:
-            response.append({
-                "status": "error",
-                "msg": str(e),
-                "stack_trace": stack_trace(e)
-            })
+            job_manifest = projeto.job_manifest()
+
+            for job in job_manifest:
+                job["status"] = "error"
+                job["error_message"] = {
+                    "msg": str(e),
+                    "stack_trace": stack_trace(e)
+                }
+                response.append(job)
+
             continue
 
     return response
@@ -134,8 +154,9 @@ def generate_project_metadata(projetos: list):
                 "stack_trace": stack_trace(e)
             })
             continue
-    
-    sorted_manifest_list = sorted(manifest_list, key=lambda x: x["project_name"])
+
+    sorted_manifest_list = sorted(
+        manifest_list, key=lambda x: x["project_name"])
     return sorted_manifest_list
 
 
@@ -157,25 +178,35 @@ def update_monday_status(
     response = []
     only_from_monday = filter_projects_from_monday(project_metadata)
     updated_list = []
+    job_manifest = project_metadata
 
     for monday_link in only_from_monday:
         url_to_update = monday_link["link"]
 
         if url_to_update not in updated_list:
             try:
+
                 monday.use_item_url(url_to_update)
+
+                if monday.get_current_status().get("label") not in ["Prepare for OUT"]:
+                    raise ValueError(
+                        f"Monday status is not 'Prepare for OUT'. Current status: {monday.get_current_status().get('label')}")
+
                 monday.set_item_status(update_status_to)
-                response.append({
-                    "status": "success",
-                    "msg": f"Updated Monday status for: {monday_link['link']}",
-                    "status_changed_to": update_status_to
-                })
+
+                for job in job_manifest:
+                    job["status"] = "success"
+
+                response.extend(job_manifest)
+
             except Exception as e:
-                response.append({
-                    "status": "error",
-                    "msg": str(e),
-                    "stack_trace": stack_trace(e)
-                })
+                for job in job_manifest:
+                    job["status"] = "error"
+                    job["error_message"] = {
+                        "msg": str(e),
+                        "stack_trace": stack_trace(e)
+                    }
+                response.extend(job_manifest)
                 continue
 
         updated_list.append(url_to_update)

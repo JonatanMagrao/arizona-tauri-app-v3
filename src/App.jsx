@@ -71,10 +71,15 @@ function App() {
       : [...links];
     if (finalLinks.length === 0) return;
 
-    const saida = JSON.parse(await loadProject(finalLinks));
-    setData(saida);
-    setLinks([]);
-    setLinksInput("");
+    try{
+
+      const saida = JSON.parse(await loadProject(finalLinks));
+      setData(saida);
+      setLinks([]);
+      setLinksInput("");
+    }catch(e){
+      console.error("Error on loadProject:", e);
+    }
   };
 
   const handleAddLink = (urlFromBar) => {
@@ -88,9 +93,9 @@ function App() {
     setLinksInput("");
   };
 
-  const handleCopyAndRefresh = async () => {
+  const handleUpdateStatus = async (pythonFunction) => {
     try {
-      await copiar(); // cria/copias pastas no backend
+      await pythonFunction(); // cria/copias pastas no backend
       const updated = await getProjectMetadata(); // pega o cache atualizado do backend
       const data = JSON.parse(updated);
       setData(data); // atualiza tabela → ícones atualizam opacidade
@@ -99,11 +104,12 @@ function App() {
     }
   };
 
+
   const handleFullProcess = async () => {
     try {
-      await handleCopyAndRefresh();
-      await slackMessage();
-      await mondayStatus();
+      await handleUpdateStatus(copiar);
+      await handleUpdateStatus(slackMessage);
+      await handleUpdateStatus(mondayStatus);
     } catch (e) {
       console.error("Error on full process:", e);
     }
@@ -132,9 +138,9 @@ function App() {
         </label>
       </div>
 
-      <button onClick={handleCopyAndRefresh}>Copy</button>
-      <button onClick={slackMessage}>Slack</button>
-      <button onClick={mondayStatus}>Monday</button>
+      <button onClick={() => handleUpdateStatus(copiar)}>Copy</button>
+      <button onClick={() => handleUpdateStatus(slackMessage)}>Slack</button>
+      <button onClick={() => handleUpdateStatus(mondayStatus)}>Monday</button>
       <button onClick={handleFullProcess}>Full</button>
       <button onClick={() => { console.log(links); }}>Show links</button>
 
