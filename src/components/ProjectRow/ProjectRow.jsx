@@ -22,11 +22,12 @@ export default function TableRow({
   const statusStyle = (() => {
     const s = String(status || "").toLowerCase();
     const map = {
+      ready: { bg: "#6a1b9a", fg: "#fff" },
+      copied: { bg: "#0288d1", fg: "#fff" },
+      notified: { bg: "#1565c0", fg: "#fff" },
       success: { bg: "#2e7d32", fg: "#fff" },
-      failed:  { bg: "#c62828", fg: "#fff" },
       warning: { bg: "#ed6c02", fg: "#111" },
-      running: { bg: "#0288d1", fg: "#fff" },
-      ready:   { bg: "#6a1b9a", fg: "#fff" }
+      failed: { bg: "#c62828", fg: "#fff" },
     };
     const { bg, fg } = map[s] || { bg: "#6b7280", fg: "#fff" }; // cinza default
     return {
@@ -77,7 +78,7 @@ export default function TableRow({
 
           <button
             type="button"
-            className={`icon-btn ${mktoutData?.exists === false ? "icon-dim" : ""}`}  
+            className={`icon-btn ${mktoutData?.exists === false ? "icon-dim" : ""}`}
             disabled={mktoutData?.exists === false}
             onClick={() => openFolder(mktoutData.path)}
             aria-label={masterData?.exists === true ? "Open MKTOUT folder" : "MKTOUT folder don't exist"}
@@ -88,7 +89,7 @@ export default function TableRow({
 
           <button
             type="button"
-            className={`icon-btn ${masterData?.exists === false ? "icon-dim" : ""}`}  
+            className={`icon-btn ${masterData?.exists === false ? "icon-dim" : ""}`}
             disabled={masterData?.exists === false}
             onClick={() => openFolder(masterData.path)}
             aria-label={masterData?.exists === true ? "Open Master folder" : "Master folder don't exist"}

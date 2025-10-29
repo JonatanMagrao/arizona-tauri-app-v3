@@ -113,10 +113,10 @@ def copiar():
     result = json.dumps(copy_metadata, ensure_ascii=False,
                         indent=2, default=str)
     
-    update_project_metadata = generate_project_metadata(_projetos)
+    # update_project_metadata = generate_project_metadata(_projetos)
     global _project_metadata
 
-    _project_metadata = update_project_metadata
+    _project_metadata = copy_metadata
 
     print(result)
     return result

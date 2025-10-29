@@ -14,8 +14,7 @@ def build_projects(config, gdrive_link_url: str, src_link: str = None):
         src_link = src_link if src_link else gdrive_link_url
         google_helper = GoogleDriveHelper(config)
         google_data = google_helper.get_link_data(gdrive_link_url)
-        project_identifier = ProjectTypeIdentifier(
-            config, src_link, google_data)
+        project_identifier = ProjectTypeIdentifier(config, src_link, google_data)
         projetos = project_identifier.create_projects
         return projetos
     except Exception as e:
@@ -87,7 +86,7 @@ def copy_projects(projetos: list[SuperplayProject]):
             continue
         try:
             metadata = projeto.dispatch_out()
-            response.append(metadata)
+            response.extend(metadata)
         except Exception:
             continue
 
@@ -125,7 +124,7 @@ def generate_project_metadata(projetos: list):
                 })
                 continue
 
-            manifesto = projeto.job_manifest
+            manifesto = projeto.job_manifest()
             for item in manifesto:
                 manifest_list.append(item)
         except Exception as e:
