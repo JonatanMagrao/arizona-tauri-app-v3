@@ -134,8 +134,9 @@ def generate_project_metadata(projetos: list):
                 "stack_trace": stack_trace(e)
             })
             continue
-
-    return manifest_list
+    
+    sorted_manifest_list = sorted(manifest_list, key=lambda x: x["project_name"])
+    return sorted_manifest_list
 
 
 def filter_projects_from_monday(project_metadata: list):
