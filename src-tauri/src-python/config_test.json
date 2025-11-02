@@ -21,7 +21,8 @@
     "monday_config":{
         "MONDAY_REDIRECT_URL":"",
         "MONDAY_TOKEN":"eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjUzMDQ0MjI5OCwiYWFpIjoxMSwidWlkIjo3NjIwNjU5OCwiaWFkIjoiMjAyNS0wNi0yNFQxNTo0OToyOC4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6Mzc2OTkzNiwicmduIjoidXNlMSJ9.xMZzATgp-DP8v91ultDEwIZhuqxDYWNMimH2Nb_7QEo",
-        "MONDAY_STATUS_UPDATE":"Sent To Marketing"
+        "MONDAY_STATUS_UPDATE":"Sent To Marketing",
+        "SENT_TO_MARKETING_ALLOWED_FROM":["Prepare For OUT","DS Approved!"]
     },
     "supported_languages": {
         "ar": {"lang": "Arabic", "abbr": "ar"},

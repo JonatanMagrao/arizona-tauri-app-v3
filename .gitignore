@@ -98,6 +98,7 @@ ruff_cache/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+teste.py
 
 # Linux
 *~

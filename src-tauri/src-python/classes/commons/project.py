@@ -154,10 +154,11 @@ def generate_project_metadata(projetos: list):
                 "stack_trace": stack_trace(e)
             })
             continue
-
-    sorted_manifest_list = sorted(
-        manifest_list, key=lambda x: x["project_name"])
-    return sorted_manifest_list
+    
+    # sorted_manifest_list = sorted(
+    #     manifest_list, key=lambda x: x["project_name"])
+    # return sorted_manifest_list
+    return manifest_list
 
 
 def filter_projects_from_monday(project_metadata: list):
@@ -175,6 +176,7 @@ def update_monday_status(
     project_metadata: dict,
 ):
     update_status_to = config.get("monday_config")["MONDAY_STATUS_UPDATE"]
+    update_status_from_allowed = config.get("monday_config")["SENT_TO_MARKETING_ALLOWED_FROM"]
     response = []
     only_from_monday = filter_projects_from_monday(project_metadata)
     updated_list = []
@@ -188,9 +190,9 @@ def update_monday_status(
 
                 monday.use_item_url(url_to_update)
 
-                if monday.get_current_status().get("label") not in ["Prepare for OUT"]:
+                if monday.get_current_status().get("label") not in update_status_from_allowed:
                     raise ValueError(
-                        f"Monday status is not 'Prepare for OUT'. Current status: {monday.get_current_status().get('label')}")
+                        f"Monday status is not allowed to be updated. Current status: {monday.get_current_status().get('label')}")
 
                 monday.set_item_status(update_status_to)
 
