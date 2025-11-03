@@ -91,71 +91,91 @@ _projetos = None
 _project_metadata = None
 
 def getProjectMetadata():
-    global _project_metadata
-    return json.dumps(_project_metadata or [], ensure_ascii=False, indent=2, default=str)
+    try:
+        global _project_metadata
+        return json.dumps(_project_metadata or [], ensure_ascii=False, indent=2, default=str)
+    except Exception as e:
+        return {"error": str(e)}
 
 def loadProject(link_list: list):
-    timer.start("Loading")
-    projetos = build_projects_from_links(config, link_list)
-    project_metadata = generate_project_metadata(projetos)
-    global _projetos, _project_metadata
-    _projetos = projetos
-    _project_metadata = project_metadata
-    result = json.dumps(project_metadata, ensure_ascii=False,
-                        indent=2, default=str)
-    timer.end("Loading")
-    print(timer.log())
-    print(result)
-    return result
+    try:
+        projetos = build_projects_from_links(config, link_list)
+        project_metadata = generate_project_metadata(projetos)
+        global _projetos, _project_metadata
+        _projetos = projetos
+        _project_metadata = project_metadata
+        result = json.dumps(project_metadata, ensure_ascii=False,
+                            indent=2, default=str)
+        print(result)
+        return result
+    except Exception as e:
+        return {"error": str(e)}
 
 
 def copiar():
-    copy_metadata = copy_projects(_projetos)
-    result = json.dumps(copy_metadata, ensure_ascii=False,
-                        indent=2, default=str)
-    
-    # update_project_metadata = generate_project_metadata(_projetos)
-    global _project_metadata
+    try:
+        copy_metadata = copy_projects(_projetos)
+        result = json.dumps(copy_metadata, ensure_ascii=False, indent=2, default=str)
+        
+        global _project_metadata
 
-    _project_metadata = copy_metadata
+        _project_metadata = copy_metadata
 
-    print(result)
-    return result
+        print(result)
+        return result
+    except Exception as e:
+        return {"error": str(e)}
 
 
 def slackMessage():
-    slack_metadata = notify_slack(_projetos)
-    result = json.dumps(slack_metadata, ensure_ascii=False,
-                        indent=2, default=str)
-    
-    global _project_metadata
-    _project_metadata = slack_metadata
-    
-    print(result)
-    return result
+    try:
+        slack_metadata = notify_slack(_projetos)
+        result = json.dumps(slack_metadata, ensure_ascii=False, indent=2, default=str)
+        
+        global _project_metadata
+        _project_metadata = slack_metadata
+        
+        print(result)
+        return result
+    except Exception as e:
+        return {"error": str(e)}
 
 
 def mondayStatus():
-    monday_status_metadata = update_monday_status(
-        config, monday, _project_metadata)
-    result = json.dumps(monday_status_metadata,
-                        ensure_ascii=False, indent=2, default=str)
-    print(result)
-    return result
+    try:
+        monday_status_metadata = update_monday_status(config, monday, _project_metadata)
+        result = json.dumps(monday_status_metadata, ensure_ascii=False, indent=2, default=str)
+        print(result)
+        return result
+    except Exception as e:
+        return {"error": str(e)}
 
 
 def openParentFileFolder(filePath:str):
-    parent_path = str(Path(filePath).parent)
-    os.startfile(parent_path)
+    try:
+        parent_path = str(Path(filePath).parent)
+        os.startfile(parent_path)
+    except Exception as e:
+        return {"error": str(e)}
 
 def openFolder(filePath: str):
-    os.startfile(filePath)
+    try:
+        os.startfile(filePath)
+    except Exception as e:
+        return {"error": str(e)}
 
 def openThumbnail(filePath: str):
-    subprocess.run(["thumbnail",filePath])
+    try:
+        subprocess.run(["thumbnail",filePath])
+    except Exception as e:
+        return {"error": str(e)}
 
 def configJson():
-    return json.dumps(config, ensure_ascii=False, indent=2, default=str)
+    try:
+        data_result = json.dumps(config, ensure_ascii=False, indent=2, default=str)
+        return data_result
+    except Exception as e:
+        return {"error": str(e)}
 
 # projetos = build_projects_from_links(config, projects_links)
 

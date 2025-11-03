@@ -6,6 +6,11 @@ export default function ProjectTable({ data, openFolder, openThumbnail, openPare
 
   const rows = data.map((item,i) => {
 
+    if(item.status === "error"){
+      // console.log(item.msg)
+      return null
+    }
+
     const id = `${item.id.game_code}-${item.id.project_type}-${item.id.project_number}-${item.id.project_iteration}`
     const loc = item?.language?.abbr ? item.language.abbr.toUpperCase() : ""
     const duration = item.duration ? item.duration : ""

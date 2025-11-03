@@ -5,6 +5,7 @@ import { join , dataDir} from "@tauri-apps/api/path";
 import "./App.css";
 import ProjectsPanel from "./components/ProjectTable/ProjectTable";
 import ActionsBar from "./components/ActionBar/ActionBar";
+import ErrorLogger from "./components/ErrorLogger/ErrorLogger";
 
 function App() {
 
@@ -33,9 +34,12 @@ function App() {
   const [links, setLinks] = useState([]);
   const [linksInput, setLinksInput] = useState("");
   const [miroEndpoints,setMiroEndpoints] = useState({})
-
+  const [errors,setErrors] = useState([])
+  
   // estado do checkbox
   const [isTest, setIsTest] = useState(false);
+
+  const handleClearErrors = () => setErrors([]);
 
   useEffect(() => {
     (async () => {
@@ -77,7 +81,16 @@ function App() {
 
     try{
 
-      const saida = JSON.parse(await loadProject(finalLinks));
+      let saida = JSON.parse(await loadProject(finalLinks));
+      saida = saida.filter(item => {
+        if(!item) return false;
+        if(item.status === "error"){
+          console.warn(item.msg)
+          setErrors(prev => [...prev, item.msg])
+          return false
+        }
+        return true
+      })
       setData(saida);
       setLinks([]);
       setLinksInput("");
@@ -155,6 +168,8 @@ function App() {
         openParentFileFolder={openParentFileFolder}
         miroEndpoints={miroEndpoints}
       />
+
+      <ErrorLogger errors={errors} onClear={handleClearErrors} />
     </div>
   );
 }

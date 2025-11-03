@@ -26,8 +26,7 @@ class ProjectTypeIdentifier():
         project_type = project_stem.split("-")[1]
 
         if project_type not in self.project_types.keys():
-            raise ValueError(
-                f"⚠️  Unknown project type: '{project_type}' in {project_stem}")
+            raise ValueError(f"Unknown project type: '{project_type}' in {project_stem}")
 
         return self.project_types.get(project_type).get("label")
 
@@ -53,5 +52,6 @@ class ProjectTypeIdentifier():
             return SuperplayVideoHookProject(self._config, self.gdrive_local_path, self.local_path, self.src_link)
 
         else:
-            raise NotImplementedError(
-                f"⚠️  Project type '{self._project_type}' is not implemented yet.")
+            import re
+            project_name = re.sub(r"_\d{2,4}x\d{2,4}","",self._find_file_in_tree.stem)
+            raise NotImplementedError(f"Project type '{self._project_type}' is not implemented yet for '{project_name}'")

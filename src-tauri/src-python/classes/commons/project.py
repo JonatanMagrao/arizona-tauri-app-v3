@@ -35,8 +35,10 @@ def build_projects_from_links(config: dict, projects_links: list) -> list:
 
             if monday_url.match(src_project_link):
                 monday_client.use_item_url(src_project_link)
-                gdrive_links_from_monday = [item["gdurl"]
-                                            for item in monday_client.get_pinned_update_gdrive_links()]
+                gdrive_links_from_monday = [
+                    item["gdurl"]
+                    for item in monday_client.get_pinned_update_gdrive_links()
+                ]
 
                 if len(gdrive_links_from_monday) == 0:
                     projetos.append({
@@ -100,7 +102,7 @@ def copy_projects(projetos: list[SuperplayProject]):
                     "stack_trace": stack_trace(e)
                 }
                 response.append(job)
-                
+
             continue
 
     return response
@@ -154,7 +156,7 @@ def generate_project_metadata(projetos: list):
                 "stack_trace": stack_trace(e)
             })
             continue
-    
+
     # sorted_manifest_list = sorted(
     #     manifest_list, key=lambda x: x["project_name"])
     # return sorted_manifest_list
@@ -176,7 +178,8 @@ def update_monday_status(
     project_metadata: dict,
 ):
     update_status_to = config.get("monday_config")["MONDAY_STATUS_UPDATE"]
-    update_status_from_allowed = config.get("monday_config")["SENT_TO_MARKETING_ALLOWED_FROM"]
+    update_status_from_allowed = config.get(
+        "monday_config")["SENT_TO_MARKETING_ALLOWED_FROM"]
     response = []
     only_from_monday = filter_projects_from_monday(project_metadata)
     updated_list = []
