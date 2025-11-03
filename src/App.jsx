@@ -26,11 +26,13 @@ function App() {
   const openFolder = (filePath) => callFunction("openFolder", [filePath])
   const openThumbnail = (filePath) => callFunction("openThumbnail", [filePath])
   const openParentFileFolder = (filePath) => callFunction("openParentFileFolder", [filePath])
+  const configJson = () => callFunction("configJson", [])
 
   // estados
   const [data, setData] = useState([]);
   const [links, setLinks] = useState([]);
   const [linksInput, setLinksInput] = useState("");
+  const [miroEndpoints,setMiroEndpoints] = useState({})
 
   // estado do checkbox
   const [isTest, setIsTest] = useState(false);
@@ -40,8 +42,10 @@ function App() {
       try {
         const file = await getTestFile();
         const resp = await readTextFile(file)
+        const miroConfig = JSON.parse(await configJson()).miro_endpoints
         const json = JSON.parse(resp);
 
+        setMiroEndpoints(miroConfig)
         setIsTest(json.is_test);
       } catch (e) {
         console.error("Error on isTestEnvEnabled:", e);
@@ -149,6 +153,7 @@ function App() {
         openFolder={openFolder}
         openThumbnail={openThumbnail}
         openParentFileFolder={openParentFileFolder}
+        miroEndpoints={miroEndpoints}
       />
     </div>
   );

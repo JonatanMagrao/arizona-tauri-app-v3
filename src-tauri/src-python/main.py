@@ -83,7 +83,8 @@ _tauri_plugin_functions = [
     "openFolder",
     "openThumbnail",
     "openParentFileFolder",
-    "getProjectMetadata"
+    "getProjectMetadata",
+    "configJson"
 ]
 
 _projetos = None
@@ -152,6 +153,9 @@ def openFolder(filePath: str):
 
 def openThumbnail(filePath: str):
     subprocess.run(["thumbnail",filePath])
+
+def configJson():
+    return json.dumps(config, ensure_ascii=False, indent=2, default=str)
 
 # projetos = build_projects_from_links(config, projects_links)
 

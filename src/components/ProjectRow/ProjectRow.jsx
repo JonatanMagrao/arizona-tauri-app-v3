@@ -1,12 +1,14 @@
 import folderIcon from "../../assets/folder_icon.svg";
 import thumbnailIcon from "../../assets/thumbnails.svg";
 import "./ProjectRow.css";
+import { openUrl } from "@tauri-apps/plugin-opener"
 
 
 export default function TableRow({
   id, type, loc, game, name, duration, owners, status,
   mktoutData, masterData, previewPath,
-  openFolder, openThumbnail, openParentFileFolder
+  openFolder, openThumbnail, openParentFileFolder,
+  miroEndpoints
 }) {
 
   async function copyText(text) {
@@ -16,6 +18,16 @@ export default function TableRow({
     } catch (err) {
       console.error("Falhou ao copiar:", err);
     }
+  }
+
+  const handleMiroLink = () => {
+    const BASE_URL = "https://miro.com/app/board/"
+    const projectNumber = id.split("-")[2]
+    const gameProject = id.split("-")[0].toLowerCase()
+    const projectType = type.toLowerCase()
+    const endpoints = miroEndpoints[projectType][gameProject]
+    const url = endpoints.find(({ start, end }) => projectNumber >= start && projectNumber <= end).endpoint
+    openUrl(`${BASE_URL}${url}`)
   }
 
   // badge de status (cores inline para não depender de CSS extra)
@@ -101,7 +113,10 @@ export default function TableRow({
           <button
             type="button"
             className="icon-btn"
-            onClick={() => openThumbnail(previewPath)}
+            onClick={() => {
+              handleMiroLink()
+              openThumbnail(previewPath)
+            }}
             aria-label="Open Thumbnail"
             title="Open Thumbnail"
           >
