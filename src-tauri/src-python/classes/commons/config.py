@@ -21,3 +21,4 @@ def load_config_json(file_name: str | Path) -> dict:
     data["test_path"] = user_download_path / "marketing_out_master_test"
 
     return data
+

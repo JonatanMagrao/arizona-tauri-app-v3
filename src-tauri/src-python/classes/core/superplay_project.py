@@ -21,8 +21,8 @@ FOLDER_NAME_SUB_NORMALIZER = [
 class SuperplayProject:
     def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path, src_link: str = None):
 
+        self.config = config
         self.google_util = GoogleDriveHelper(config)
-        self.slack_util = SlackSuperplay(config)
         self.from_monday = src_link if (urlparse(src_link if '://' in src_link else f'https://{src_link}').hostname or '').lower() == 'superplay.monday.com' else False
         self.gdrive_local_path = gdrive_local_path
         self.local_path = local_path

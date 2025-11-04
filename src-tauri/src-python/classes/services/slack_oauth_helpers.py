@@ -1,126 +1,139 @@
-import json
+# receive_once.py
+import http.server, socketserver, json, os, threading, time, webbrowser, secrets
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 
-def acquire_slack_oauth_tokens (
-    config: dict,
+def get_slack_user_token_via_ngrok(
+    ngrok_https_base: str,
     *,
-    callback_host: str = "127.0.0.1",
-    callback_port: int = 17123,
-    callback_path: str = "/callback",
-    timeout_sec: int = 60,
+    port: int = 43110,
+    path: str = "/receive-token",
+    timeout_sec: int = 300,
     open_browser: bool = True,
-):
+) -> dict:
     """
-    config esperado:
-      {
-        "SLACK_OAUTH_REDIRECT_URL": ".../exec",
-        "SLACK_CLIENT_ID": "000.000",
-        "BOT_SCOPES": "",
-        "USER_SCOPES": "users:read,...",
-        "SLACK_TEAM_ID": "TXXXX"   # opcional (enforce)
-      }
+    Executa o fluxo completo e retorna:
+      {"ok": True, "user_token": "xoxp-...", "user_id": "U...", "team_id": "T..."}
+    Parâmetros:
+      ngrok_https_base: ex. "https://xxxxx.ngrok-free.app"
+      port: porta do loopback (default 43110)
+      path: caminho do receptor local (default "/receive-token")
+      timeout_sec: tempo limite total (default 300s)
+      open_browser: abre o navegador automaticamente (default True)
+    Requer: seu backend com endpoint POST /init e callback em /auth/slack
     """
-    import http.server, socketserver, threading, webbrowser
-    import urllib.parse, urllib.request, secrets, time, json
+    ngrok_https_base = (ngrok_https_base or "").rstrip("/")
+    if not (ngrok_https_base.startswith("https://")):
+        raise ValueError("ngrok_https_base deve iniciar com https://")
 
-    slack_oauth_url = config["SLACK_OAUTH_REDIRECT_URL"]
-    slack_client_id = config["SLACK_CLIENT_ID"]
-    bot_scopes      = config.get("BOT_SCOPES", "") or ""
-    user_scopes     = config.get("USER_SCOPES", "") or ""
-    team_enforce    = config.get("SLACK_TEAM_ID") or None
+    HOST = "127.0.0.1"
+    CALLBACK_URL = f"http://{HOST}:{port}{path}"
 
-    state = secrets.token_hex(32)
-    result = {"ok": False}
+    # --- sincronização para 1 único POST recebido ---
+    done_event = threading.Event()
+    result_holder = {"data": None, "error": None}
 
     class Handler(http.server.BaseHTTPRequestHandler):
-        def log_message(self, *a, **k): return
-        def _out(self, code, body):
+        def log_message(self, *a, **k):  # silencia logs
+            pass
+
+        def _send(self, code=200, body=b"", ctype="application/json"):
             self.send_response(code)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Type", ctype)
+            # CORS básico p/ fetch vindo de página https (ngrok)
+            origin = self.headers.get("Origin", ngrok_https_base)
+            self.send_header("Access-Control-Allow-Origin", origin or "*")
+            self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type")
             self.end_headers()
+            if body:
+                self.wfile.write(body)
+
+        def do_OPTIONS(self):
+            if self.client_address[0] not in ("127.0.0.1", "::1"):
+                return self._send(403, b'{"ok":false,"error":"forbidden"}')
+            return self._send(204)
+
+        def do_POST(self):
+            # aceita só loopback
+            if self.client_address[0] not in ("127.0.0.1", "::1"):
+                return self._send(403, b'{"ok":false,"error":"forbidden"}')
+
+            if self.path != path:
+                return self._send(404, b'{"ok":false,"error":"not_found"}')
+
+            ctype = (self.headers.get("Content-Type") or "").lower()
+            length = int(self.headers.get("Content-Length") or 0)
+            raw = self.rfile.read(length) if length else b""
+
             try:
-                self.wfile.write(body.encode("utf-8"))
+                if "application/json" in ctype:
+                    data = json.loads(raw.decode("utf-8") or "{}")
+                    token   = data.get("token") or data.get("user_token") or ""
+                    user_id = data.get("user_id") or ""
+                    team_id = data.get("team_id") or ""
+                else:
+                    from urllib.parse import parse_qs
+                    qs = parse_qs(raw.decode("utf-8"))
+                    token   = (qs.get("token") or qs.get("user_token") or [""])[0]
+                    user_id = (qs.get("user_id") or [""])[0]
+                    team_id = (qs.get("team_id") or [""])[0]
             except Exception:
-                pass  # navegador pode fechar a conexão
+                return self._send(400, b'{"ok":false,"error":"bad_payload"}')
 
-        def do_GET(self):
-            nonlocal result
-            p = urllib.parse.urlparse(self.path)
-            if p.path != callback_path:
-                return self._out(404, "Not Found")
-            q = urllib.parse.parse_qs(p.query)
-            ok   = q.get("ok", ["0"])[0] == "1"
-            lid  = q.get("login_id", [""])[0]
-            st   = q.get("state", [""])[0]
-            team = q.get("team", [""])[0]
-            if not ok or not lid or st != state:
-                return self._out(400, "Invalid callback")
-            if team_enforce and team and team != team_enforce:
-                return self._out(403, "Workspace not allowed")
+            if not token:
+                return self._send(400, b'{"ok":false,"error":"missing_user_token"}')
 
-            fetch = f"{slack_oauth_url}?action=fetch&login_id={urllib.parse.quote(lid)}&state={urllib.parse.quote(state)}"
-            with urllib.request.urlopen(fetch, timeout=30) as r:
-                result = json.loads(r.read().decode("utf-8", "replace"))
-            self._out(200, "<h3>OK</h3><p>Você já pode fechar esta janela.</p>")
-            raise SystemExit  # encerra o loop do servidor
+            payload = {"ok": True, "user_token": token, "user_id": user_id, "team_id": team_id}
+            result_holder["data"] = payload
+            done_event.set()
+
+            return self._send(200, json.dumps(payload).encode("utf-8"))
 
     class Server(socketserver.TCPServer):
         allow_reuse_address = True
 
-    def serve_once():
+    # --- inicia servidor em thread ---
+    srv = Server((HOST, port), Handler)
+    t = threading.Thread(target=srv.serve_forever, daemon=True)
+    t.start()
+
+    try:
+        # --- chama /init no backend ngrok ---
+        state = secrets.token_urlsafe(24)
+        init_url = ngrok_https_base + "/init"
+        body = json.dumps({"state": state, "callback_url": CALLBACK_URL}).encode("utf-8")
+        req = Request(init_url, data=body, headers={"Content-Type": "application/json"}, method="POST")
+        with urlopen(req, timeout=20) as r:
+            init_resp = json.loads(r.read().decode("utf-8", "replace"))
+        if not (init_resp.get("ok") and init_resp.get("auth_url")):
+            raise RuntimeError(f"/init failed: {init_resp}")
+
+        auth_url = init_resp["auth_url"]
+        if open_browser:
+            webbrowser.open(auth_url, new=1, autoraise=True)
+        else:
+            print("Abra a URL de autorização:", auth_url)
+
+        # --- aguarda o POST do callback local ---
+        if not done_event.wait(timeout_sec):
+            raise TimeoutError("Timeout aguardando token no loopback")
+
+        return result_holder["data"] or {"ok": False, "error": "no_data"}
+
+    finally:
         try:
-            with Server((callback_host, callback_port), Handler) as httpd:
-                while True:
-                    try:
-                        httpd.handle_request()
-                    except SystemExit:
-                        break
-        except OSError as e:
-            result.update(ok=False, error=f"bind_error:{e}")
-
-    # monta URL de autorização (user-only se BOT_SCOPES vazio)
-    params = {"client_id": slack_client_id, "redirect_uri": slack_oauth_url, "state": state}
-    if bot_scopes.strip():  params["scope"] = bot_scopes
-    if user_scopes.strip(): params["user_scope"] = user_scopes
-    auth_url = "https://slack.com/oauth/v2/authorize?" + urllib.parse.urlencode(params)
-
-    threading.Thread(target=serve_once, daemon=True).start()
-    if open_browser: webbrowser.open(auth_url, new=1, autoraise=True)
-    else: print("Abra a URL:", auth_url)
-
-    deadline = time.time() + timeout_sec
-    while time.time() < deadline and not result.get("ok"):
-        time.sleep(0.15)
-
-    if not result.get("ok"):
-        raise TimeoutError("OAuth timeout ou erro no fetch do GAS.")
-    return result
+            srv.shutdown()
+        except Exception:
+            pass
+        try:
+            srv.server_close()
+        except Exception:
+            pass
 
 
-
-if __name__ == "__main__":
-
-  config = {
-      "SLACK_OAUTH_REDIRECT_URL": "https://script.google.com/macros/s/AKfycbxhopJPeY1Sl49yTRJPVSCI3liEZDejgF3wex63faSl4bgUgVN51rTrToL1ivl3iaqE/exec",
-      "SLACK_CLIENT_ID": "549770083351.9075626247603",
-      "BOT_SCOPES": "",
-      "USER_SCOPES": "users:read,users:read.email,chat:write,files:write,channels:history,groups:history,groups:read,channels:read,reactions:write",
-      "SLACK_TEAM_ID": "TG5NN2FAB"
-  }
-
-  data = acquire_slack_oauth_tokens(config)
-  # print(json.dumps(data, ensure_ascii=False, indent=2, default=str))
-  if data and data.get("ok"):
-      team_id = data.get("team").get("id")
-      authed_user:dict = data.get("authed_user")
-      user_id = authed_user.get("id")
-      user_token = authed_user.get("access_token")
+# Uso direto (teste manual):
+# if __name__ == "__main__":
+#     NGROK = "https://52b222c4aea6.ngrok-free.app"  # <- troque aqui
+#     data = get_slack_user_token_via_ngrok(NGROK, timeout_sec=300, open_browser=True)
     
-      # this will be stored on user local machine
-      new_data = {
-          "team_id": team_id,
-          "user_id": user_id,
-          "user_token": user_token
-      }
-
-      print(json.dumps(new_data, ensure_ascii=False, indent=2, default=str))
-      

@@ -1,5 +1,6 @@
 from pathlib import Path
 from classes.commons import build_task, normalize_old_project_name
+from classes.integrations.slack.slack_superplay import SlackSuperplay
 from classes.core.superplay_project import SuperplayProject
 from classes.services import FileCopier
 from classes.core.exceptions import MediaFileNotFoundError
@@ -274,6 +275,7 @@ class SuperplayVideoHookProject(SuperplayProject):
 
 
     def send_slack_message(self):
+        self.slack_util = SlackSuperplay(self.config)
         payload = self.build_slack_payload()
 
         # nome do canal (pega do primeiro que tiver id)

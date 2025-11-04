@@ -1,6 +1,6 @@
 import keyring
 import json
-from classes.services.slack_oauth_helpers import acquire_slack_oauth_tokens
+from classes.services.slack_oauth_helpers import get_slack_user_token_via_ngrok
 
 class SlackTokens:
     def __init__(self, config:dict):
@@ -18,21 +18,24 @@ class SlackTokens:
         self.slack_token = self.retrieve_token()
 
     def _create_token(self):
-        slack_response_data = acquire_slack_oauth_tokens(self.slack_config)
-        if slack_response_data and slack_response_data.get("ok"):
+        try:
+            slack_response_data = get_slack_user_token_via_ngrok(self.slack_oauth_redirect_url)
+            if slack_response_data:
 
-            team_id = slack_response_data.get("team").get("id")
-            authed_user:dict = slack_response_data.get("authed_user")
-            user_id = authed_user.get("id")
-            user_token = authed_user.get("access_token")
-            
-            slack_user_data = {
-                "team_id": team_id,
-                "user_id": user_id,
-                "user_token": user_token
-            }
+                team_id = slack_response_data.get("team_id")
+                user_id = slack_response_data.get("user_id")
+                user_token = slack_response_data.get("user_token")
+                
+                slack_user_data = {
+                    "team_id": team_id,
+                    "user_id": user_id,
+                    "user_token": user_token
+                }
 
-            return slack_user_data
+                return slack_user_data
+
+        except Exception:
+            raise Exception
 
     def retrieve_token(self):
         data = keyring.get_password(self.service, self.account)
@@ -44,6 +47,9 @@ class SlackTokens:
         
         parsed_data = json.loads(data)
         return parsed_data
+    
+    def exist_token(self):
+        return keyring.get_password(self.service, self.account)
 
     def set_token(self, data: dict):
         try:

@@ -5,7 +5,7 @@ from classes.commons import (
 )
 from classes.services import (EventTimer, TestEnvStore)
 from classes.integrations.google_drive_helper import GoogleDriveHelper
-from classes.integrations.slack.slack_superplay import SlackSuperplay
+from classes.integrations.slack.slack_tokens import SlackTokens
 from classes.integrations.monday.monday_client import MondayClient
 from pathlib import Path
 import sys
@@ -44,10 +44,10 @@ TESTE = "https://drive.google.com/drive/folders/1mngFCnuFg-7pB9MHUoKpFfPArj6lLGx
 # ==================== Carregar projetos ====================
 config = load_config_json("config.json")
 timer = EventTimer()
-slack = SlackSuperplay(config)
 google = GoogleDriveHelper(config)
 monday = MondayClient(config)
 test_store = TestEnvStore()
+
 
 projects_links = [
     # DS_V_042_001_EN,
@@ -84,8 +84,17 @@ _tauri_plugin_functions = [
     "openThumbnail",
     "openParentFileFolder",
     "getProjectMetadata",
-    "configJson"
+    "configJson",
+    "slackTokenExists",
 ]
+
+def slackTokenExists():
+    import keyring
+    service = config.get("slack_oauth_config").get("SERVICE")
+    account = config.get("slack_oauth_config").get("ACCOUNT")
+    slack_token_exists = bool(keyring.get_password(service,account))
+    return str(slack_token_exists)
+
 
 _projetos = None
 _project_metadata = None
