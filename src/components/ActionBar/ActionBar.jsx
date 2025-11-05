@@ -10,6 +10,7 @@ export default function ActionsBar({
   placeholder = "Paste the URL",
   leftLabel = "Load",
   rightLabel = "Add",
+  disabled = false, // <-- novo: controla o bloqueio dos botões
 }) {
   const fire = (fn) => fn?.(value);
 
@@ -26,10 +27,18 @@ export default function ActionsBar({
         }}
       />
       <div className="actionsButtons">
-        <button className="btn btnPrimary" onClick={() => fire(onLeftClick)}>
+        <button
+          className="btn btnPrimary"
+          disabled={disabled}
+          onClick={() => fire(onLeftClick)}
+        >
           {leftLabel}
         </button>
-        <button className="btn btnGhost" onClick={() => fire(onRightClick)}>
+        <button
+          className="btn btnGhost"
+          disabled={disabled}
+          onClick={() => fire(onRightClick)}
+        >
           {rightLabel}
         </button>
       </div>

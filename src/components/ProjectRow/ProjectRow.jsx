@@ -8,7 +8,8 @@ export default function TableRow({
   id, type, loc, game, name, duration, owners, status,
   mktoutData, masterData, previewPath,
   openFolder, openThumbnail, openParentFileFolder,
-  miroEndpoints
+  miroEndpoints,
+  disabled
 }) {
 
   async function copyText(text) {
@@ -81,6 +82,7 @@ export default function TableRow({
           <button
             type="button"
             className="icon-btn"
+            disabled={disabled}
             onClick={() => openParentFileFolder(previewPath)}
             aria-label="Open source folder"
             title="Open source folder"
@@ -90,8 +92,8 @@ export default function TableRow({
 
           <button
             type="button"
-            className={`icon-btn ${mktoutData?.exists === false ? "icon-dim" : ""}`}
-            disabled={mktoutData?.exists === false}
+            className={`icon-btn ${(mktoutData?.exists === false) ? "icon-dim" : ""}`}
+            disabled={disabled || mktoutData?.exists === false}
             onClick={() => openFolder(mktoutData.path)}
             aria-label={masterData?.exists === true ? "Open MKTOUT folder" : "MKTOUT folder don't exist"}
             title={masterData?.exists === true ? "Open MKTOUT folder" : "MKTOUT folder don't exist"}
@@ -101,8 +103,8 @@ export default function TableRow({
 
           <button
             type="button"
-            className={`icon-btn ${masterData?.exists === false ? "icon-dim" : ""}`}
-            disabled={masterData?.exists === false}
+            className={`icon-btn ${(masterData?.exists === false) ? "icon-dim" : ""}`}
+            disabled={disabled || masterData?.exists === false}
             onClick={() => openFolder(masterData.path)}
             aria-label={masterData?.exists === true ? "Open Master folder" : "Master folder don't exist"}
             title={masterData?.exists === true ? "Open Master folder" : "Master folder don't exist"}
@@ -113,6 +115,7 @@ export default function TableRow({
           <button
             type="button"
             className="icon-btn"
+            disabled={disabled}
             onClick={() => {
               handleMiroLink()
               openThumbnail(previewPath)

@@ -41,6 +41,9 @@ function App() {
   // estado do checkbox
   const [isTest, setIsTest] = useState(false);
 
+  // estado global para bloquear botões durante ações
+  const [busy, setBusy] = useState(false);
+
   const handleClearErrors = () => setErrors([]);
 
   useEffect(() => {
@@ -81,8 +84,9 @@ function App() {
       : [...links];
     if (finalLinks.length === 0) return;
 
+    if (busy) return;
+    setBusy(true);
     try {
-
       let saida = JSON.parse(await loadProject(finalLinks));
       saida = saida.filter(item => {
         if (!item) return false;
@@ -98,6 +102,8 @@ function App() {
       setLinksInput("");
     } catch (e) {
       console.error("Error on loadProject:", e);
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -113,6 +119,8 @@ function App() {
   };
 
   const handleUpdateStatus = async (pythonFunction) => {
+    if (busy) return;
+    setBusy(true);
     try {
       await pythonFunction(); // cria/copias pastas no backend
       const updated = await getProjectMetadata(); // pega o cache atualizado do backend
@@ -120,39 +128,54 @@ function App() {
       setData(data); // atualiza tabela → ícones atualizam opacidade
     } catch (e) {
       console.error("Error on copy & refresh:", e);
+    } finally {
+      setBusy(false);
     }
   };
 
   const handleSlackMessage = async () => {
-    const slatkTokenExists = await slackTokenExists();
-    if (slatkTokenExists === "False") {
-      console.log(slatkTokenExists)
-      const slackTokenResponse = await genSlackToken()
-      const json = JSON.parse(slackTokenResponse)
-      if(json.status === "error") {
-        console.warn(json.msg)
-        setErrors(prev => [...prev, json.msg])
-        return
+    if (busy) return;
+    setBusy(true);
+    try {
+      const slatkTokenExists = await slackTokenExists();
+      if (slatkTokenExists === "False") {
+        console.log(slatkTokenExists)
+        const slackTokenResponse = await genSlackToken()
+        const json = JSON.parse(slackTokenResponse)
+        if(json.status === "error") {
+          console.warn(json.msg)
+          setErrors(prev => [...prev, json.msg])
+          return
+        }
       }
-    }
 
-    await handleUpdateStatus(slackMessage)
+      await handleUpdateStatus(slackMessage)
+    } catch (e) {
+      console.error("Error on slack message:", e);
+    } finally {
+      setBusy(false);
+    }
   }
 
 
   const handleFullProcess = async () => {
+    if (busy) return;
+    setBusy(true);
     try {
       await handleUpdateStatus(copiar);
       await handleSlackMessage();
       await handleUpdateStatus(mondayStatus);
     } catch (e) {
       console.error("Error on full process:", e);
+    } finally {
+      setBusy(false);
     }
   }
 
   return (
     <div>
       <ActionsBar
+        disabled={busy}
         value={linksInput}
         onChange={setLinksInput}
         onEnter={handleAddLink}
@@ -173,22 +196,30 @@ function App() {
         </label>
       </div>
 
-      <button onClick={() => handleUpdateStatus(copiar)}>Copy</button>
-      <button onClick={handleSlackMessage}>Slack</button>
-      <button onClick={() => handleUpdateStatus(mondayStatus)}>Monday</button>
-      <button onClick={handleFullProcess}>Full</button>
-      <button onClick={() => { console.log(links); }}>Show links</button>
-      <button onClick={async () => {
-        const resp = await genSlackToken()
-        const json = JSON.parse(resp);
-        if(json.status === "error"){
-          console.warn(json.msg)
-          setErrors(prev => [...prev, json.msg])
-          return
+      <button disabled={busy} onClick={() => handleUpdateStatus(copiar)}>Copy</button>
+      <button disabled={busy} onClick={handleSlackMessage}>Slack</button>
+      <button disabled={busy} onClick={() => handleUpdateStatus(mondayStatus)}>Monday</button>
+      <button disabled={busy} onClick={handleFullProcess}>Full</button>
+      {/* <button disabled={busy} onClick={() => { console.log(links); }}>Show links</button> */}
+      <button disabled={busy} onClick={async () => {
+        try {
+          setBusy(true);
+          const resp = await genSlackToken()
+          const json = JSON.parse(resp);
+          if(json.status === "error"){
+            console.warn(json.msg)
+            setErrors(prev => [...prev, json.msg])
+            return
+          }
+        } catch (e) {
+          console.error("Error on gen:", e);
+        } finally {
+          setBusy(false);
         }
-      }}>Gen </button>
+      }}>Generate Token</button>
 
       <ProjectsPanel
+        disabled={busy}
         data={data}
         openFolder={openFolder}
         openThumbnail={openThumbnail}
