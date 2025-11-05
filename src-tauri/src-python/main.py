@@ -1,7 +1,8 @@
 import bootstrap
 from classes.commons import (
     load_config_json, build_projects_from_links, copy_projects,
-    notify_slack, generate_project_metadata, update_monday_status
+    notify_slack, generate_project_metadata, update_monday_status,
+    check_health
 )
 from classes.services import (EventTimer, TestEnvStore)
 from classes.integrations.google_drive_helper import GoogleDriveHelper
@@ -86,15 +87,8 @@ _tauri_plugin_functions = [
     "getProjectMetadata",
     "configJson",
     "slackTokenExists",
+    "genSlackToken"
 ]
-
-def slackTokenExists():
-    import keyring
-    service = config.get("slack_oauth_config").get("SERVICE")
-    account = config.get("slack_oauth_config").get("ACCOUNT")
-    slack_token_exists = bool(keyring.get_password(service,account))
-    return str(slack_token_exists)
-
 
 _projetos = None
 _project_metadata = None
@@ -185,6 +179,30 @@ def configJson():
         return data_result
     except Exception as e:
         return {"error": str(e)}
+    
+def slackTokenExists():
+    import keyring
+    service = config.get("slack_oauth_config").get("SERVICE")
+    account = config.get("slack_oauth_config").get("ACCOUNT")
+    slack_token_exists = bool(keyring.get_password(service,account))
+    return str(slack_token_exists)
+
+def genSlackToken():
+    url = config.get("slack_oauth_config").get("SLACK_OAUTH_REDIRECT_URL")
+    reachable, healthy, code = check_health(url)
+
+    if code == 400:
+        return json.dumps({"status":"error","msg": f"code status: {code}. ngrok on, server off. Please, contact Jonatan."},default=str)
+    elif code == 404:
+        return json.dumps({"status":"error","msg": f"code status: {code}. ngrok and server off. Please, contact Jonatan."},default=str)
+    elif code == 500:
+        return json.dumps({"status":"error","msg": f"code status: {code}. server error, verify error on server side. Please, contact Jonatan."},default=str)
+    elif code == 505:
+        return json.dumps({"status":"error","msg": f"code status: {code}. server error, verify error on server side. Please, contact Jonatan."},default=str)
+    
+    SlackTokens(config)._create_token()
+
+
 
 # projetos = build_projects_from_links(config, projects_links)
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { callFunction } from "tauri-plugin-python-api";
 import { readTextFile, writeTextFile, exists } from '@tauri-apps/plugin-fs';
-import { join , dataDir} from "@tauri-apps/api/path";
+import { join, dataDir } from "@tauri-apps/api/path";
 import "./App.css";
 import ProjectsPanel from "./components/ProjectTable/ProjectTable";
 import ActionsBar from "./components/ActionBar/ActionBar";
@@ -28,14 +28,16 @@ function App() {
   const openThumbnail = (filePath) => callFunction("openThumbnail", [filePath])
   const openParentFileFolder = (filePath) => callFunction("openParentFileFolder", [filePath])
   const configJson = () => callFunction("configJson", [])
+  const slackTokenExists = () => callFunction("slackTokenExists", [])
+  const genSlackToken = () => callFunction("genSlackToken", [])
 
   // estados
   const [data, setData] = useState([]);
   const [links, setLinks] = useState([]);
   const [linksInput, setLinksInput] = useState("");
-  const [miroEndpoints,setMiroEndpoints] = useState({})
-  const [errors,setErrors] = useState([])
-  
+  const [miroEndpoints, setMiroEndpoints] = useState({})
+  const [errors, setErrors] = useState([])
+
   // estado do checkbox
   const [isTest, setIsTest] = useState(false);
 
@@ -53,7 +55,7 @@ function App() {
         setIsTest(json.is_test);
       } catch (e) {
         console.error("Error on isTestEnvEnabled:", e);
-      } 
+      }
     })();
   }, []);
 
@@ -79,12 +81,12 @@ function App() {
       : [...links];
     if (finalLinks.length === 0) return;
 
-    try{
+    try {
 
       let saida = JSON.parse(await loadProject(finalLinks));
       saida = saida.filter(item => {
-        if(!item) return false;
-        if(item.status === "error"){
+        if (!item) return false;
+        if (item.status === "error") {
           console.warn(item.msg)
           setErrors(prev => [...prev, item.msg])
           return false
@@ -94,7 +96,7 @@ function App() {
       setData(saida);
       setLinks([]);
       setLinksInput("");
-    }catch(e){
+    } catch (e) {
       console.error("Error on loadProject:", e);
     }
   };
@@ -121,11 +123,27 @@ function App() {
     }
   };
 
+  const handleSlackMessage = async () => {
+    const slatkTokenExists = await slackTokenExists();
+    if (slatkTokenExists === "False") {
+      console.log(slatkTokenExists)
+      const slackTokenResponse = await genSlackToken()
+      const json = JSON.parse(slackTokenResponse)
+      if(json.status === "error") {
+        console.warn(json.msg)
+        setErrors(prev => [...prev, json.msg])
+        return
+      }
+    }
+
+    await handleUpdateStatus(slackMessage)
+  }
+
 
   const handleFullProcess = async () => {
     try {
       await handleUpdateStatus(copiar);
-      await handleUpdateStatus(slackMessage);
+      await handleSlackMessage();
       await handleUpdateStatus(mondayStatus);
     } catch (e) {
       console.error("Error on full process:", e);
@@ -156,10 +174,19 @@ function App() {
       </div>
 
       <button onClick={() => handleUpdateStatus(copiar)}>Copy</button>
-      <button onClick={() => handleUpdateStatus(slackMessage)}>Slack</button>
+      <button onClick={handleSlackMessage}>Slack</button>
       <button onClick={() => handleUpdateStatus(mondayStatus)}>Monday</button>
       <button onClick={handleFullProcess}>Full</button>
       <button onClick={() => { console.log(links); }}>Show links</button>
+      <button onClick={async () => {
+        const resp = await genSlackToken()
+        const json = JSON.parse(resp);
+        if(json.status === "error"){
+          console.warn(json.msg)
+          setErrors(prev => [...prev, json.msg])
+          return
+        }
+      }}>Gen </button>
 
       <ProjectsPanel
         data={data}
