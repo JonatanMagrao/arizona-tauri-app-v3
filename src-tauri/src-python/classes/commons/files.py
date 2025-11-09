@@ -15,6 +15,11 @@ def find_file_in_tree_from(folder: Path, ext: str | None = ".") -> Path | None:
         for item in folder.iterdir():
             if item.is_file() and (any_ext or item.suffix.lower() == norm_ext):
                 return item
+            
+            if bool(item.suffix) and not item.is_file():
+                # erro com o contexto do python rodando com o tauri. se rodar pelo python localmente, funciona normal.
+                # se der erro, só rodar o main diretamente pelo python como `python src-tauri/src-python/main.py`
+                raise FileNotFoundError("Issue not solved. Please, make this project manually.")
 
         # depois: desce recursivamente nas subpastas
         for item in folder.iterdir():

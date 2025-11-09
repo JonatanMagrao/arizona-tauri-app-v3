@@ -125,6 +125,11 @@ function App() {
       await pythonFunction(); // cria/copias pastas no backend
       const updated = await getProjectMetadata(); // pega o cache atualizado do backend
       const data = JSON.parse(updated);
+      data.forEach(item => {
+        if (item.status === "error") {
+          setErrors(prev => [...prev, item.msg])
+        }
+      })
       setData(data); // atualiza tabela → ícones atualizam opacidade
     } catch (e) {
       console.error("Error on copy & refresh:", e);

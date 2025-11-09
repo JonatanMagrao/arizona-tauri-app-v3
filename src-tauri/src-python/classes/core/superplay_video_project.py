@@ -347,9 +347,9 @@ class SuperplayVideoProject(SuperplayProject):
             }
 
             if not links:
-                item["error"] = f"Project link not found for: {project_name}"
+                item["error"] = f"Google's project link not found with name: {project_name}"
             elif len(links) > 1:
-                item["error"] = f"More than one project link found for: {project_name}"
+                item["error"] = f"More than one project link found with name: {project_name}"
             else:
                 item["project_link"] = links[0]
 
@@ -358,35 +358,58 @@ class SuperplayVideoProject(SuperplayProject):
 
     def send_slack_message(self):
         self.slack_util = SlackSuperplay(self.config)
+
+        # monta payload e manifesto base
         payload = self.build_slack_payload()
-        # nome do canal (pega do primeiro que tiver id)
+        job_manifest = self.job_manifest()
+
+        # segurança: tenta alinhar payload e manifest por ordem;
+        # se der diferença de tamanho, faz um fallback por project_name
+        if len(payload) != len(job_manifest):
+            jobs_by_name = {j["project_name"]: j for j in job_manifest}
+            aligned_manifest = []
+            for p in payload:
+                j = jobs_by_name.get(p["project_name"])
+                if not j:
+                    j = {
+                        "project_name": p["project_name"],
+                        "status": "error",
+                        "msg": "No job manifest entry found for this payload item."
+                    }
+                aligned_manifest.append(j)
+            job_manifest = aligned_manifest
+
+        # descobre o nome do canal (se existir algum channel_id válido)
         channel_name = None
         for p in payload:
-            if p.get("channel_id"):
-                channel_name = self.slack_util.get_channel_name_by_id(
-                    p["channel_id"])
+            cid = p.get("channel_id")
+            if cid:
+                channel_name = self.slack_util.get_channel_name_by_id(cid)
                 break
 
-        errors = []
-
-        # for localized projects with multiple languages
+        # ============================================================
+        # 1) Cenário: projetos localizados (pastas) com múltiplos idiomas
+        #    -> envia UMA mensagem consolidada com todas as linguagens válidas
+        # ============================================================
         if self._has_only_folder and not self._all_folder_names_equal_ignoring_duration:
-            valid = [p for p in payload if p.get(
-                "project_link") and not p.get("error")]
-            if not valid:
-                errors = [{"project": p["project_name"],
-                           "msg": p["error"] or "invalid"} for p in payload]
-                return {
-                    "status": "error",
-                    "project_name": self.project_title,
-                    "producers": self.producer_list,
-                    "channel_name": channel_name,
-                    "errors": errors
-                }
+            valid = [p for p in payload if p.get("project_link") and not p.get("error")]
 
+            # nenhum link válido: marca todos como erro e retorna lista
+            if not valid:
+                for idx, p in enumerate(payload):
+                    j = job_manifest[idx]
+                    j["status"] = "error"
+                    j["channel_name"] = channel_name
+                    j["msg"] = p.get("error") or "Project link not found for Slack notification."
+                return job_manifest
+
+            # há links válidos -> monta mensagem única
             base = valid[0]
             lines = [
-                f'{p["language"] or "UNK"} - {p["project_link"]}' for p in valid]
+                f'{(p.get("language") or "UNK")} - {p["project_link"]}'
+                for p in valid
+            ]
+
             self.slack_util.send_out_msg(
                 base["channel_id"],
                 base["producers"],
@@ -395,53 +418,58 @@ class SuperplayVideoProject(SuperplayProject):
                 base["video_path"],
             )
 
-        # for multiple projects with different iteration numbers
-        elif self._all_folder_names_equal_ignoring_duration:
-            for p in payload:
-                if p.get("error") or not p.get("project_link"):
-                    if p.get("error"):
-                        errors.append(
-                            {"project": p["project_name"], "msg": p["error"]})
-                    continue
-                self.slack_util.send_out_msg(
-                    p["channel_id"],
-                    p["producers"],
-                    p["project_name"],
-                    p["project_link"],
-                    p["video_path"],
-                )
+            # marca jobs: válidos = notified, inválidos = error
+            for idx, p in enumerate(payload):
+                j = job_manifest[idx]
+                j["channel_name"] = channel_name
+                if p in valid:
+                    j["status"] = "notified"
+                else:
+                    j["status"] = "error"
+                    j["msg"] = p.get("error") or "Skipped from multi-language notification (no valid link)."
 
-        # for single projects
-        else:
-            for p in payload:
-                if p.get("error") or not p.get("project_link"):
-                    if p.get("error"):
-                        errors.append(
-                            {"project": p["project_name"], "msg": p["error"]})
-                    continue
-                self.slack_util.send_out_msg(
-                    p["channel_id"],
-                    p["producers"],
-                    p["project_name"],
-                    p["project_link"],
-                    p["video_path"],
-                )
+            return job_manifest
 
-        job_manifest = self.job_manifest()
-        for job in job_manifest:
-            job["status"] = "notified"
+        # ============================================================
+        # 2) Demais cenários:
+        #    - múltiplos projetos com iter diferente
+        #    - projeto único
+        #    Tratamos todos de forma uniforme: um send por payload válido.
+        # ============================================================
+        for idx, p in enumerate(payload):
+            j = job_manifest[idx]
+            j["channel_name"] = channel_name
 
-        print(json.dumps(job_manifest, ensure_ascii=False, indent=2, default=str))
+            # erro detectado na construção do payload
+            if p.get("error"):
+                j["status"] = "error"
+                j["msg"] = p["error"]
+                continue
+
+            # sem link de projeto -> não dá pra notificar
+            if not p.get("project_link"):
+                j["status"] = "error"
+                j["msg"] = "Project link not found for Slack notification."
+                continue
+
+            # sem canal -> erro de config
+            if not p.get("channel_id"):
+                j["status"] = "error"
+                j["msg"] = "Slack channel_id not defined for this project."
+                continue
+
+            # se chegou aqui, podemos enviar
+            self.slack_util.send_out_msg(
+                p["channel_id"],
+                p["producers"],
+                p["project_name"],
+                p["project_link"],
+                p["video_path"],
+            )
+            j["status"] = "notified"
 
         return job_manifest
 
-        # return {
-        #     "status": "success" if not errors else "partial",
-        #     "project_name": self.project_title,
-        #     "producers": self.producer_list,
-        #     "channel_name": channel_name,
-        #     "errors": errors
-        # }
 
     @property
     def remove_from_out(self):

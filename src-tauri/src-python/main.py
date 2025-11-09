@@ -73,7 +73,8 @@ projects_links = [
     # "https://superplay.monday.com/boards/5239196091/pulses/18199215678/posts/4591896239?reply=reply-4593132440",
     # "https://superplay.monday.com/boards/5239196091/pulses/9864252617",
     # "https://drive.google.com/drive/folders/1TeGwKhhkd_lOyiTPfrqsiVMnR67PeAce",
-    "https://superplay.monday.com/boards/5239196091/pulses/18147477761/posts/4569309015?reply=reply-4605634061"
+    # "https://superplay.monday.com/boards/5239196091/pulses/18147477761/posts/4569309015?reply=reply-4605634061"
+    "https://superplay.monday.com/boards/5239196091/pulses/18253671169"
 ]
 
 _tauri_plugin_functions = [
