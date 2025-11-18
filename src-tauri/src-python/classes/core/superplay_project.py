@@ -69,12 +69,25 @@ class SuperplayProject:
 
     @property
     def project_title(self) -> Optional[str]:
-        file = find_file_in_tree_from(self.gdrive_local_path,".mp4")
-        remove_resolution = re.compile(r"_\d{2,4}x\d{2,4}", flags=re.IGNORECASE)
-        return remove_resolution.sub("", file.stem)
+
+        video_targets = ["Creative Projects", "Marketing_DD_MGX_Masters_01", "Marketing_DX_MGX_Masters_01"]
+        banner_targets = ["Banners"]
+
+        if any(part in self.gdrive_local_path.parts for part in video_targets):
+            file = find_file_in_tree_from(self.gdrive_local_path,".mp4")
+            remove_resolution = re.compile(r"_\d{2,4}x\d{2,4}", flags=re.IGNORECASE)
+            return remove_resolution.sub("", file.stem)
+        
+        if any(part in self.gdrive_local_path.parts for part in banner_targets):
+            project_name = self.gdrive_local_path
+            
+            if not project_name.is_dir():
+                raise FileNotFoundError(f"Banner folder not found in path '{self.gdrive_local_path}'")
+            
+            return project_name.stem
 
     def _parse_project_id(self) -> None:
-
+        
         if not re.match(r"[A-Z]{2}-[A-Z]{1,3}-\d{3,4}-\d{3,4}_",self.project_title):
             raise IDError(f"Project ID incorrect or incomplete: {self.project_title}")
 

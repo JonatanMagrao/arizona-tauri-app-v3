@@ -2,7 +2,7 @@ import React from "react";
 import "./ProjectTable.css";
 import ProjectRow from "../ProjectRow/ProjectRow";
 
-export default function ProjectTable({ data, openFolder, openThumbnail, openParentFileFolder,miroEndpoints, disabled }) {
+export default function ProjectTable({ data, openFolder, openThumbnail, openParentFileFolder, miroEndpoints, disabled }) {
 
   const rows = data.map((item,i) => {
 
@@ -17,6 +17,7 @@ export default function ProjectTable({ data, openFolder, openThumbnail, openPare
     const mktoutData = item.mktout_folder_path
     const masterData = item.master_folder_path
     const previewPath = item.video_to_preview
+    const src_folder_path = item.src_folder_path
 
     return (
       <ProjectRow
@@ -32,6 +33,7 @@ export default function ProjectTable({ data, openFolder, openThumbnail, openPare
         mktoutData={mktoutData}
         masterData={masterData}
         previewPath={previewPath}
+        src_folder_path={src_folder_path}
         openFolder={openFolder}
         openThumbnail={openThumbnail}
         openParentFileFolder={openParentFileFolder}

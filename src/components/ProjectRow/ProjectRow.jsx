@@ -6,7 +6,7 @@ import { openUrl } from "@tauri-apps/plugin-opener"
 
 export default function TableRow({
   id, type, loc, game, name, duration, owners, status,
-  mktoutData, masterData, previewPath,
+  mktoutData, masterData, previewPath, src_folder_path,
   openFolder, openThumbnail, openParentFileFolder,
   miroEndpoints,
   disabled
@@ -83,7 +83,7 @@ export default function TableRow({
             type="button"
             className="icon-btn"
             disabled={disabled}
-            onClick={() => openParentFileFolder(previewPath)}
+            onClick={() => openFolder(src_folder_path)}
             aria-label="Open source folder"
             title="Open source folder"
           >

@@ -27,6 +27,7 @@ def find_file_in_tree_from(folder: Path, ext: str | None = ".") -> Path | None:
                 found = find_file_in_tree_from(item, ext)  # <-- passa `ext`
                 if found:
                     return found
+                
 
     except PermissionError:
         return None  # sem permissão em alguma subpasta

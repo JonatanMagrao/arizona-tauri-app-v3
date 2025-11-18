@@ -12,13 +12,7 @@ LANGUAGE_PATTERN_LIST = [
     r'_([A-Z]{2}(?:-[A-Z]{2})?)_\d{2,3}s',
 ]
 
-IGNORE_LIST = [
-    "Archive",
-    "_Archive"
-]
-
-
-class SuperplayVideoProject(SuperplayProject):
+class SuperplayBannerProject(SuperplayProject):
     def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path, src_link: str = None):
         super().__init__(config, gdrive_local_path, local_path, src_link)
         self.ignore_list: dict = self.project_types.get(self.project_type).get("ignore_list")
@@ -49,145 +43,106 @@ class SuperplayVideoProject(SuperplayProject):
         names = [normalize(item.name) for item in self.content]
         return all(name == names[0] for name in names) if names else False
     
-
-    def _get_project_name(self, src_folder: list[str]) -> str:
-        path_list = [Path(item) for item in src_folder]
-
-        cleanner_list = [
-            # remove resolution in the name
-            re.compile(r"_\d{2,4}x\d{2,4}", flags=re.IGNORECASE),
-            # remove version in the name
-            re.compile(r"_v\d{1,3}", flags=re.IGNORECASE),
-        ]
-
-        sanitize_list = [
-            # remove extra spaces with the underscore
-            re.compile(r"\s*_\s*", flags=re.IGNORECASE),
-        ]
-
-        project_title = next((item.stem for item in path_list if item.is_file() and item.suffix.lower() == ".mp4"), None)
-        if not project_title:
-            raise MediaFileNotFoundError(
-                f".mp4 file not found on '{path_list[0].parent.name}' folder")
-
-        for cleaner in cleanner_list:
-            project_title = cleaner.sub("", project_title)
-
-        for sanitizer in sanitize_list:
-            project_title = sanitizer.sub("_", project_title)
-
-        return project_title
-
-    def _build_project(self, src_folder: Path) -> dict:
-        project_content = [*src_folder.iterdir()]
-        filtered_project_content = self._filter_solo_content(project_content)
-        project_id = self.id
-        project_name = self._get_project_name(project_content)
-        game = self.game_info.get(self.game_code)
-        type_label = self.project_types.get(self.project_type).get("label")
-        duration = self._duration(project_content)
-        language = self._language(project_name)
-        language_full_info = self.supported_languages.get(language.lower())
-        video_to_preview_path = self._video_to_preview_path(project_content)
-
-        root_master_folder_path = self._root_master_folder_path(language)
-        root_mktout_folder_path = self._root_marketing_out_folder_path(language)
-        mktout_game_folder_path = self._marketing_out_game_folder_path(root_mktout_folder_path)
-
-        # todo aqui, fazer validação para quando for mais de um projeto para pegar os nomes dos arquivos certinho
-        mktout_folder_path = self._marketing_out_folder_path(mktout_game_folder_path, project_name)
-        master_folder_path = self._master_folder_path(root_master_folder_path, project_name)
-
-        project = {
-            "status": "ready",
-            "from_monday": self.from_monday,
-            "id": project_id,
-            "project_name": project_name,
-            "type_label": type_label,
-            "game": game,
-            "duration": duration,
-            "language": language_full_info,
-            "producers": self.producer_list,
-            "content_to_copy": filtered_project_content,
-            "video_to_preview": video_to_preview_path,
-            "src_folder_path": src_folder,
-            "mktout_folder_path": {
-                "path": mktout_folder_path,
-                "exists": mktout_folder_path.exists(),
-                "is_empty": len(list(mktout_folder_path.iterdir())) == 0
-                if mktout_folder_path.exists()
-                else False
-            },
-            "master_folder_path": {
-                "path": master_folder_path,
-                "exists": master_folder_path.exists(),
-                "is_empty": len(list(master_folder_path.iterdir())) == 0
-                if master_folder_path.exists()
-                else False
-            },
-            "copy_paths": build_task(self._sanitize_video_file_name, filtered_project_content, [mktout_folder_path, master_folder_path])
-        }
-
-        return project
-
-    def job_manifest(self):
-        #! @property seria ideal apenas para recuperar dados sem risco de erro, quando dados já estão prontos e disponíveis e sem I/O. por conta do contents e project com o _build_project, seria interessante ou criar uma validação pra isso com try catch antes ou criar uma outra função auxiliar apenas para ajudar na construção disso. se der algum erro, nem chega aqui e avisa o usuário
-        #! preciso adaptar para o novo formato. aqui ele tá passando o path da pasta, não dos arquivos. eu preciso dos arquivos para pegar o nome
-        if self._has_only_folder:
-            projetos = []
-            for src_folder in self.content:
-                contents = [*Path(src_folder).iterdir()]
-                content_path = contents[0].parent
-                
-                # had issues when projects have different iteration numbers on gdrive provided
-                # it may fix some iteration number based on each project folder content. 
-                for item in content_path.iterdir():
-                    if item.is_file() and item.suffix.lower() == ".mp4":
-                        self.iteration_number = item.stem.split("-")[3].split("_")[0]
-                        break
-
-                project = self._build_project(content_path)
-                projetos.append(project)
-            return projetos
-
-        else:
-
-            return [self._build_project(self.gdrive_local_path)]
-
-    def _sanitize_video_file_name(self, file_path: Path) -> str:
-        remove_version = re.compile(r"_v\d{1,3}", flags=re.IGNORECASE)
-        final_file_path_name = remove_version.sub("", file_path.name)
-
-        return final_file_path_name
-
-    def _duration(self, src_folder: list[Path]) -> Optional[str]:
-        """
-        Retorna a duração em segundos encontrada no nome do primeiro .mp4
-        (ex.: '120s' -> '120'), ou None se não encontrar.
-        """
-        for item in src_folder:
-            if item.is_file() and item.suffix.lower() == ".mp4":
-                duration = re.search(
-                    r"_(\d{2,3})s", item.stem, flags=re.IGNORECASE)
-                if duration:
-                    return duration.group(1)
-        return None
-
-    def _language(self, project_name: str) -> str | None:
+    def _language(self, src_folder: Path) -> str | None:
         # Tenta os padrões em ordem de mais específico para mais genérico
         #! implementar caso encontre um idioma mas não está cadastrado
-        for pattern in LANGUAGE_PATTERN_LIST:
-            match = re.search(pattern, project_name)
-            if match:
-                return match.group(1)
 
-        raise ValueError("Language not found in project name.")
+        if not "Localizations" in src_folder.parts:
+            return "EN"
 
+        project_parts = src_folder.parts
+        for part in project_parts:
+            if re.match(r"^[a-z]{2}(-[a-z]{2})?$",part,flags=re.IGNORECASE):
+                return part
+            
+        raise ValueError(f"Language not found in path :'{src_folder}'")
+
+
+    def _build_project(self, src_folder: Path) -> dict:
+
+        try:
+
+            is_localization_folder = src_folder.parent.name == "Localizations"
+            project_content = [src_folder] if is_localization_folder else [*src_folder.iterdir()] 
+            filtered_project_content = self._filter_solo_content(project_content)
+
+            project_id = self.id
+            project_name = self.project_title
+            game = self.game_info.get(self.game_code)
+            type_label = self.project_types.get(self.project_type).get("label")
+
+            language = self._language(src_folder)
+            language_full_info = self.supported_languages.get(language.lower())
+
+            if src_folder.parent.name == "Localizations":
+                root_mktout_folder_path = self._root_marketing_out_folder_path() / src_folder.name
+                mktout_game_folder_path = self._marketing_out_game_folder_path(root_mktout_folder_path)
+                mktout_folder_path = self._marketing_out_folder_path(mktout_game_folder_path, self.project_title)
+            else:
+                root_mktout_folder_path = self._root_marketing_out_folder_path() / "EN"
+                mktout_game_folder_path = self._marketing_out_game_folder_path(root_mktout_folder_path)
+                mktout_folder_path = self._marketing_out_folder_path(mktout_game_folder_path, project_name)
+
+            project = {
+                "status": "ready",
+                "from_monday": self.from_monday,
+                "id": project_id,
+                "project_name": project_name,
+                "type_label": type_label,
+                "game": game,
+                "duration": None,
+                "language": language_full_info,
+                "producers": self.producer_list,
+                "content_to_copy": filtered_project_content,
+                "video_to_preview": None,
+                "src_folder_path": src_folder,
+                "mktout_folder_path": {
+                    "path": mktout_folder_path,
+                    "exists": mktout_folder_path.exists(),
+                    "is_empty": len(list(mktout_folder_path.iterdir())) == 0
+                    if mktout_folder_path.exists()
+                    else False
+                },
+                "master_folder_path":{
+                    "path":None,
+                    "exists":False,
+                    "is_empty":True
+                },
+                "copy_paths": build_task(self._sanitize_out_path, filtered_project_content, [mktout_folder_path])
+            }
+
+            return project
+        except Exception as e:
+            raise e
+
+    def job_manifest(self):
+        localizations = self.gdrive_local_path / "Localizations"
+        projects = [self._build_project(self.gdrive_local_path)]      
+
+        if not localizations.exists():
+            return projects  
+        
+        for localized in localizations.iterdir():
+            projects.append(self._build_project(localizations / localized.name))
+
+        return projects
+                    
+
+    def _sanitize_out_path(self, file_path: Path) -> str:
+
+        if file_path.name.lower() == "master psd":
+            return "Master PSD"
+
+        _ = file_path
+        return ""
+    
+    
     def _filter_solo_content(self, content: list[Path]) -> list[Path]:
+
         contents = []
-        ignore_file_extensions: list[str] = self.ignore_list.get(
-            "file_extensions")
+        ignore_file_extensions: list[str] = self.ignore_list.get("file_extensions")
         ignore_folder_names: list[str] = self.ignore_list.get("folder_names")
+        ignore_folder_names.append("Localizations")
 
         ignore_exts = {ext.lower().strip() for ext in ignore_file_extensions}
         ignore_folders = {name.lower().strip() for name in ignore_folder_names}
@@ -201,71 +156,26 @@ class SuperplayVideoProject(SuperplayProject):
 
         return contents
 
-    def _root_master_folder_path(self, language: str) -> Path:
-        if self.is_test:
-            return Path(self.test_path) / "Render" / "MASTER" / language.upper()
-        else:
-            return self.find_path_anchor("Render") / "MASTER" / language.upper()
-
-    def _video_to_preview_path(self, src_folder: list[str]) -> Path:
-        # .mp4 exists?
-        if not any(Path(item).is_file() and Path(item).suffix.lower() == ".mp4" for item in src_folder):
-            raise FileNotFoundError("Video to preview not found")
-
-        # working only with .mp4 and Path
-        mp4_files = [Path(item) for item in src_folder if Path(
-            item).is_file() and Path(item).suffix.lower() == ".mp4"]
-
-        # 1º stop: 1080x1080
-        for item in mp4_files:
-            if re.search(r"_1080x1080", item.stem, flags=re.IGNORECASE):
-                return item
-
-        # 2º stopa: 1920x1080
-        for item in mp4_files:
-            if re.search(r"_1920x1080", item.stem, flags=re.IGNORECASE):
-                return item
-
-        # fallback: any .mp4 file
-        return mp4_files[0]
-
-    def _root_marketing_out_folder_path(self, language: str) -> Path:
+    def _root_marketing_out_folder_path(self) -> Path:
 
         try:
             project_type = self.id.get("project_type")
             game_code = self.id.get("game_code").upper()
-            game_code_path = self.game_info.get(
-                game_code).get("mktout_folder_name")
+            game_code_path = self.game_info.get(game_code).get("mktout_folder_name")
             game_type_cfg = self.project_types.get(project_type)
             shared_drive_name = game_type_cfg.get("shared_drive_name")
             type_folder_relpath = game_type_cfg.get("folder_path")
 
             if self.is_test:
-                # return Path(self.test_path) / "Marketing OUT" / game_code_path / type_folder_path / language
-                return Path(self.test_path, shared_drive_name, game_code_path, *type_folder_relpath, language)
+                # return Path(self.test_path) / "Marketing OUT" / game_code_path / type_folder_path 
+                return Path(self.test_path, shared_drive_name, game_code_path, *type_folder_relpath)
             else:
-                # return Path(self.local_path) / "Marketing OUT" / game_code_path / type_folder_path / language
-                return Path(self.local_path, shared_drive_name, game_code_path, *type_folder_relpath, language)
+                # return Path(self.local_path) / "Marketing OUT" / game_code_path / type_folder_path 
+                return Path(self.local_path, shared_drive_name, game_code_path, *type_folder_relpath)
 
         except Exception as e:
             raise e
-
-    def _master_folder_path(self, root_master_folder_path: Path, project_name) -> Path:
-        sanitized_project_name = re.sub(
-            r"_v\d{1,3}", "", project_name, flags=re.IGNORECASE)
-
-        if not root_master_folder_path.exists():
-            return root_master_folder_path / sanitized_project_name
-
-        if not root_master_folder_path.is_dir():
-            raise NotADirectoryError(
-                f"⚠️  Master root path is not a directory: {root_master_folder_path}")
-
-        for folder_path in sorted(root_master_folder_path.iterdir()):
-            if re.match(f"{self.game_code}-{self.project_type}-{self.project_number}-{self.iteration_number}_", folder_path.stem, flags=re.IGNORECASE):
-                return folder_path
-
-        return root_master_folder_path / sanitized_project_name
+            
 
     def _marketing_out_game_folder_path(self, root_marketing_out_folder_path: Path) -> Path:
 
@@ -286,10 +196,9 @@ class SuperplayVideoProject(SuperplayProject):
         return root_marketing_out_folder_path / normalize_old_project_name(self.game_name)
 
     def _marketing_out_folder_path(self, marketing_out_game_folder_path: Path, project_name: str) -> Path:
-        sanitized_project_name = re.sub(r"_v\d{1,3}", "", project_name, flags=re.IGNORECASE)
 
         if not marketing_out_game_folder_path.exists():
-            return marketing_out_game_folder_path / sanitized_project_name
+            return marketing_out_game_folder_path / project_name
 
         if not marketing_out_game_folder_path.is_dir():
             raise NotADirectoryError(f"⚠️  Marketing OUT root path is not a directory: {marketing_out_game_folder_path}")
@@ -299,7 +208,8 @@ class SuperplayVideoProject(SuperplayProject):
             if re.match(f"{self.game_code}-{self.project_type}-{self.project_number}-{self.iteration_number}_", folder_path.stem, flags=re.IGNORECASE):
                 return folder_path
 
-        return marketing_out_game_folder_path / sanitized_project_name
+        return marketing_out_game_folder_path / project_name
+    
 
     def dispatch_out(self):
         job_manifest: dict = self.job_manifest()
@@ -312,9 +222,9 @@ class SuperplayVideoProject(SuperplayProject):
             file_copier.copy_variadic_groups(task)
             job["status"] = "copied"
             job["mktout_folder_path"]["exists"] = True
-            job["master_folder_path"]["exists"] = True
+            job["master_folder_path"]["exists"] = False
             job["mktout_folder_path"]["is_empty"] = False
-            job["master_folder_path"]["is_empty"] = False
+            job["master_folder_path"]["is_empty"] = True
             metadata.append(job)
 
             # metadata.append({
