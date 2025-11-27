@@ -260,7 +260,11 @@ class SuperplayBannerProject(SuperplayProject):
             if not links:
                 item["error"] = f"Google's project link not found with name: {project_name}"
             elif len(links) > 1:
-                item["error"] = f"More than one project link found with name: {project_name}"
+                error_msg = (
+                    f"More than one project link found with name: {project_name}\n"
+                    + "\n".join(f"- {link}" for link in links)
+                )
+                item["error"] = error_msg
             else:
                 item["project_link"] = links[0]
 

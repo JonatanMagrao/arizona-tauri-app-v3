@@ -13,9 +13,9 @@ def get_full_path_win() -> Path:
 
     for drive in list_drives_os():
         for root in SHARED_DRIVE_LABELS:
-            full_path = Path(drive, root)
+            full_path = Path(drive, root, "Marketing OUT")
             if full_path.exists():
-                return full_path
+                return Path(drive,root)
 
     raise Exception("Local Google Drive not found (Windows)")
     

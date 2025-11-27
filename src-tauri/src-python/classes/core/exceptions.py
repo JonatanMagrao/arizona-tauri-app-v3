@@ -21,8 +21,8 @@ class MediaFileNotFoundError(AppBaseError):
         super().__init__(message, code)
 
 class LinkDataRetrievalError(AppBaseError):
-    def __init__(self, original_error: str):
-        message = f"Failed to retrieve link data from Google Drive API: {original_error}"
+    def __init__(self):
+        message = f"Failed to retrieve link data from Google Drive API. Please, try it again."
         super().__init__(message, code="LINK_DATA_ERROR")
 
 class InvalidURL(AppBaseError):
