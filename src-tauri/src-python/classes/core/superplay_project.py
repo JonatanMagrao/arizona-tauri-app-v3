@@ -56,12 +56,22 @@ class SuperplayProject:
             r"[A-Z]{2}_\d{3,4}_",            flags=re.IGNORECASE)
         pattern_new = re.compile(
             r"[A-Z]{2}-[A-Z]{1,3}-\d{3,4}_", flags=re.IGNORECASE)
+        wrong_pattern = re.compile(
+            r"([A-Z]{2})-([A-Z]{1,3})-(\d{3,4})-\d{3,4}_([a-z\s]+)_",re.IGNORECASE)
 
         for item in self.project_path_parts:
             if pattern_old.match(item):
                 return item
             if pattern_new.match(item):
                 return item
+            if wrong_pattern.match(item):
+                fix = wrong_pattern.search(item)
+                game_code = fix.group(1)
+                proj_type = fix.group(2)
+                game_number = fix.group(3)
+                game_name = fix.group(4)
+                fixed_game_name = f"{game_code}-{proj_type}-{game_number}_{game_name}"
+                return fixed_game_name
 
         # --- Fallback ---
         # Nenhum padrão bateu: retorna None ou, se preferir,
