@@ -19,7 +19,7 @@ class SuperplayVideoHookProject(SuperplayProject):
         cleanner_list = [
             re.compile(r"_\d{2,4}x\d{2,4}", flags=re.IGNORECASE), # remove resolution in the name
             re.compile(r"_reference", flags=re.IGNORECASE), # remove reference in the name
-            re.compile(r"_v\d{1,3}", flags=re.IGNORECASE), # remove version in the name
+            re.compile(r"[\s_]*v\d{1,3}", flags=re.IGNORECASE), # remove version in the name
         ]
 
         sanitize_list = [

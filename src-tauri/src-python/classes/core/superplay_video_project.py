@@ -57,7 +57,7 @@ class SuperplayVideoProject(SuperplayProject):
             # remove resolution in the name
             re.compile(r"_\d{2,4}x\d{2,4}", flags=re.IGNORECASE),
             # remove version in the name
-            re.compile(r"_v\d{1,3}", flags=re.IGNORECASE),
+            re.compile(r"[\s_]*v\d{1,3}", flags=re.IGNORECASE),
         ]
 
         sanitize_list = [

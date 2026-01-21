@@ -586,7 +586,7 @@ if __name__ == "__main__":
     client = MondayClient(MONDAY_TOKEN)
 
     # Vincula o item pelo link do Monday (aceita .../pulses/<id> ou .../items/<id>)
-    MONDAY_URL = "https://superplay.monday.com/boards/5239196091/pulses/18147479560/posts/4566449807"
+    MONDAY_URL = "https://superplay.monday.com/boards/5239196091/views/115751609/pulses/10726614790/posts/4807657823?reply=reply-4823980849"
     client.use_item_url(MONDAY_URL)
 
     # 1) Resumo das atualizações do item (novo nome, sem parâmetros)
@@ -598,14 +598,14 @@ if __name__ == "__main__":
     # print("Status atual:", cur)
 
     # 3) Alterar status (agora sem board_id/pulse_id)
-    # client.set_item_status("Sent to Marketing", column_title_hint="Task Status")
-    # print("Status alterado.")
+    client.set_item_status("Sent To Marketing", column_title_hint="Task Status")
+    print("Status alterado.")
 
     # 4) Donos de Marketing via Parent (agora sem passar pulse_id)
-    mkt_owners = client.get_mkt_owners()
+    # mkt_owners = client.get_mkt_owners()
     # print(json.dumps(mkt_owners, ensure_ascii=False, indent=2))
-    saida = [item["email"] for item in mkt_owners]
-    print(saida)
+    # saida = [item["email"] for item in mkt_owners]
+    # print(saida)
 
     # 5) Links de Google Drive do update pinado
     # pinned_links = client.get_pinned_update_gdrive_links()
