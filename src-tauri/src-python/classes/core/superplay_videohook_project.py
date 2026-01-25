@@ -7,6 +7,7 @@ from classes.core.exceptions import MediaFileNotFoundError
 import re, json
 from typing import Optional
 
+VERSION_PATTERN = re.compile(r"(?:[\s_]+v\d{1,3})(?=\.[^.]+$|$)", flags=re.IGNORECASE)
 
 class SuperplayVideoHookProject(SuperplayProject):
     def __init__(self, config: dict, gdrive_local_path: Path, local_path: Path, src_link: str = None):
@@ -19,7 +20,7 @@ class SuperplayVideoHookProject(SuperplayProject):
         cleanner_list = [
             re.compile(r"_\d{2,4}x\d{2,4}", flags=re.IGNORECASE), # remove resolution in the name
             re.compile(r"_reference", flags=re.IGNORECASE), # remove reference in the name
-            re.compile(r"[\s_]*v\d{1,3}", flags=re.IGNORECASE), # remove version in the name
+            VERSION_PATTERN
         ]
 
         sanitize_list = [
@@ -84,8 +85,8 @@ class SuperplayVideoHookProject(SuperplayProject):
         
         
     def _sanitize_video_file_name(self, file_path: Path) -> str:
-        remove_version = re.compile(r"_v\d{1,3}", flags=re.IGNORECASE)
-        final_file_path_name = remove_version.sub("", file_path.name)
+        final_file_path_name = VERSION_PATTERN.sub("", file_path.name)
+
 
         return final_file_path_name
 
@@ -169,7 +170,7 @@ class SuperplayVideoHookProject(SuperplayProject):
             raise e
 
     def _master_folder_path(self, root_master_folder_path: Path, project_name) -> Path:
-        sanitized_project_name = re.sub(r"_v\d{1,3}", "", project_name, flags= re.IGNORECASE)
+        sanitized_project_name = VERSION_PATTERN.sub("", project_name)
 
         if not root_master_folder_path.exists():
             return root_master_folder_path / sanitized_project_name
@@ -203,7 +204,7 @@ class SuperplayVideoHookProject(SuperplayProject):
         return root_marketing_out_folder_path / normalize_old_project_name(self.game_name)
 
     def _marketing_out_folder_path(self, marketing_out_game_folder_path: Path, project_name: str) -> Path:
-        sanitized_project_name = re.sub(r"_v\d{1,3}", "", project_name, flags=re.IGNORECASE)
+        sanitized_project_name = VERSION_PATTERN.sub("", project_name)
 
         if not marketing_out_game_folder_path.exists():
             return marketing_out_game_folder_path / sanitized_project_name
