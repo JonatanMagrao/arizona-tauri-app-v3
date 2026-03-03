@@ -13,6 +13,7 @@
     "fs:allow-read-text-file",
     "fs:allow-write-text-file",
     "fs:allow-exists",
+    "core:window:allow-set-always-on-top",
     {
       "identifier": "fs:scope",
       "allow": [

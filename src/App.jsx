@@ -6,8 +6,11 @@ import "./App.css";
 import ProjectsPanel from "./components/ProjectTable/ProjectTable";
 import ActionsBar from "./components/ActionBar/ActionBar";
 import ErrorLogger from "./components/ErrorLogger/ErrorLogger";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
-function App() {
+await getCurrentWindow().setAlwaysOnTop(true);
+
+function App() {  
 
   const REL_DIR = "com.superplay.out-process.test-env";
   const REL_FILE = "test.json";
