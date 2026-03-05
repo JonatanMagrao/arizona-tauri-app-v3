@@ -8,9 +8,7 @@ import ActionsBar from "./components/ActionBar/ActionBar";
 import ErrorLogger from "./components/ErrorLogger/ErrorLogger";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
-await getCurrentWindow().setAlwaysOnTop(true);
-
-function App() {  
+function App() {
 
   const REL_DIR = "com.superplay.out-process.test-env";
   const REL_FILE = "test.json";
@@ -33,6 +31,8 @@ function App() {
   const configJson = () => callFunction("configJson", [])
   const slackTokenExists = () => callFunction("slackTokenExists", [])
   const genSlackToken = () => callFunction("genSlackToken", [])
+
+  const [isAlwaysOnTop, setAlwaysOnTop] = useState(false)
 
   // estados
   const [data, setData] = useState([]);
@@ -79,6 +79,12 @@ function App() {
     setIsTest(isChecked)
 
   };
+
+  const handleAlwaysOnTop = async (e) => {
+    const isChecked = e.target.checked;
+    await getCurrentWindow().setAlwaysOnTop(isChecked);
+    setAlwaysOnTop(isChecked)
+  }
 
   const handleLoadProject = async (valueFromBar) => {
     const candidate = String(valueFromBar ?? linksInput).trim();
@@ -150,7 +156,7 @@ function App() {
         console.log(slatkTokenExists)
         const slackTokenResponse = await genSlackToken()
         const json = JSON.parse(slackTokenResponse)
-        if(json.status === "error") {
+        if (json.status === "error") {
           console.warn(json.msg)
           setErrors(prev => [...prev, json.msg])
           return
@@ -202,6 +208,14 @@ function App() {
           />
           Test mode: {isTest ? "Yes" : "No"}
         </label>
+        <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <input
+            type="checkbox"
+            checked={isAlwaysOnTop}
+            onChange={handleAlwaysOnTop}
+          />
+          Always on Top: {isAlwaysOnTop ? "Yes" : "No"}
+        </label>
       </div>
 
       <button disabled={busy} onClick={() => handleUpdateStatus(copiar)}>Copy</button>
@@ -214,7 +228,7 @@ function App() {
           setBusy(true);
           const resp = await genSlackToken()
           const json = JSON.parse(resp);
-          if(json.status === "error"){
+          if (json.status === "error") {
             console.warn(json.msg)
             setErrors(prev => [...prev, json.msg])
             return
